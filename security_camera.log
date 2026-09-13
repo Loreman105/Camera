@@ -1,0 +1,218 @@
+2026-09-13 09:44:09,366 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-13 09:44:09,368 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-13 09:44:09,369 WARNING YOLO unavailable: No module named 'ultralytics'
+2026-09-13 09:44:09,369 WARNING YOLO unavailable: No module named 'ultralytics'
+2026-09-13 09:45:34,283 INFO Camera 1 - PTZ connected
+2026-09-13 09:45:35,137 INFO Camera 2 - Webcam connected
+2026-09-13 09:51:28,786 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-13 09:51:28,787 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-13 09:51:47,184 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-13 09:51:47,185 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-13 09:52:02,086 INFO YOLO person detector loaded
+2026-09-13 09:52:02,111 INFO YOLO person detector loaded
+2026-09-13 09:52:04,197 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 09:52:04,197 INFO Camera 1 - PTZ connected
+2026-09-13 09:52:05,292 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-13 09:52:05,292 INFO Camera 2 - Webcam connected
+2026-09-13 10:05:57,119 INFO Discovered cameras: ['Camera index 0']
+2026-09-13 10:05:57,120 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-13 10:05:58,104 INFO YOLO person detector loaded
+2026-09-13 10:05:58,123 INFO YOLO person detector loaded
+2026-09-13 10:06:00,624 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-13 10:06:00,624 INFO Camera 2 - Webcam connected
+2026-09-13 10:06:05,942 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 10:06:05,942 INFO Camera 1 - PTZ connected
+2026-09-13 10:11:21,195 INFO Camera 1 - PTZ idle for 300s; requesting experimental UVC wakeup preset 1
+2026-09-13 10:11:21,285 INFO Camera 1 - PTZ UVC feed closed to trigger wakeup preset 1
+2026-09-13 10:11:24,506 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 10:11:24,506 INFO Camera 1 - PTZ connected
+2026-09-13 10:17:05,031 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-13 10:17:05,032 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-13 10:17:05,976 INFO YOLO person detector loaded
+2026-09-13 10:17:05,997 INFO YOLO person detector loaded
+2026-09-13 10:17:07,108 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 10:17:07,108 INFO Camera 1 - PTZ connected
+2026-09-13 10:17:08,368 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-13 10:17:08,368 INFO Camera 2 - Webcam connected
+2026-09-13 10:21:56,738 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-13 10:21:56,739 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-13 10:21:57,703 INFO YOLO person detector loaded
+2026-09-13 10:21:57,722 INFO YOLO person detector loaded
+2026-09-13 10:21:58,803 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 10:21:58,804 INFO Camera 1 - PTZ connected
+2026-09-13 10:22:00,119 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-13 10:22:00,119 INFO Camera 2 - Webcam connected
+2026-09-13 10:23:13,599 INFO Recording started: D:\Recordings\camera_2_-_webcam\2026-09-13\10-23-13_4k.mp4
+2026-09-13 10:23:13,604 INFO Recording started: D:\Recordings\camera_1_-_ptz\2026-09-13\10-23-13_4k.mp4
+2026-09-13 10:23:24,238 INFO Recording stopped: D:\Recordings\camera_1_-_ptz\2026-09-13\10-23-13_4k.mp4
+2026-09-13 10:23:24,239 INFO Recording started: D:\Recordings\camera_1_-_ptz\2026-09-13\10-23-24_144p.mp4
+2026-09-13 10:23:27,868 INFO Recording stopped: D:\Recordings\camera_1_-_ptz\2026-09-13\10-23-24_144p.mp4
+2026-09-13 10:23:27,879 INFO Recording stopped: D:\Recordings\camera_2_-_webcam\2026-09-13\10-23-13_4k.mp4
+2026-09-13 10:24:11,334 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-13 10:24:11,335 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-13 10:24:12,299 INFO YOLO person detector loaded
+2026-09-13 10:24:12,317 INFO YOLO person detector loaded
+2026-09-13 10:24:13,722 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 10:24:13,722 INFO Camera 1 - PTZ connected
+2026-09-13 10:24:14,658 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-13 10:24:14,658 INFO Camera 2 - Webcam connected
+2026-09-13 10:24:16,031 INFO Recording started: D:\Recordings\camera_1_-_ptz\2026-09-13\10-24-16_144p.mp4
+2026-09-13 10:24:16,063 INFO Recording started: D:\Recordings\camera_2_-_webcam\2026-09-13\10-24-16_4k.mp4
+2026-09-13 10:24:17,665 INFO Recording stopped: D:\Recordings\camera_1_-_ptz\2026-09-13\10-24-16_144p.mp4
+2026-09-13 10:24:17,667 INFO Recording started: D:\Recordings\camera_1_-_ptz\2026-09-13\10-24-17_4k.mp4
+2026-09-13 10:24:22,441 INFO Recording stopped: D:\Recordings\camera_1_-_ptz\2026-09-13\10-24-17_4k.mp4
+2026-09-13 10:24:22,442 INFO Recording started: D:\Recordings\camera_1_-_ptz\2026-09-13\10-24-22_144p.mp4
+2026-09-13 10:24:26,368 INFO Recording stopped: D:\Recordings\camera_1_-_ptz\2026-09-13\10-24-22_144p.mp4
+2026-09-13 10:24:26,371 INFO Recording started: D:\Recordings\camera_1_-_ptz\2026-09-13\10-24-26_4k.mp4
+2026-09-13 10:24:31,699 INFO Recording stopped: D:\Recordings\camera_2_-_webcam\2026-09-13\10-24-16_4k.mp4
+2026-09-13 10:24:31,709 INFO Recording stopped: D:\Recordings\camera_1_-_ptz\2026-09-13\10-24-26_4k.mp4
+2026-09-13 10:25:09,384 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-13 10:25:09,385 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-13 10:25:10,372 INFO YOLO person detector loaded
+2026-09-13 10:25:10,392 INFO YOLO person detector loaded
+2026-09-13 10:25:11,516 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 10:25:11,516 INFO Camera 1 - PTZ connected
+2026-09-13 10:25:12,645 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-13 10:25:12,645 INFO Camera 2 - Webcam connected
+2026-09-13 10:25:35,400 INFO Recording started: D:\Recordings\camera_2_-_webcam\2026-09-13\10-25-35_4k.mp4
+2026-09-13 10:25:35,411 INFO Recording started: D:\Recordings\camera_1_-_ptz\2026-09-13\10-25-35_4k.mp4
+2026-09-13 10:25:43,574 INFO Recording stopped: D:\Recordings\camera_1_-_ptz\2026-09-13\10-25-35_4k.mp4
+2026-09-13 10:25:43,575 INFO Recording started: D:\Recordings\camera_1_-_ptz\2026-09-13\10-25-43_144p.mp4
+2026-09-13 10:25:45,604 INFO Recording stopped: D:\Recordings\camera_1_-_ptz\2026-09-13\10-25-43_144p.mp4
+2026-09-13 10:25:45,605 INFO Recording started: D:\Recordings\camera_1_-_ptz\2026-09-13\10-25-45_4k.mp4
+2026-09-13 10:25:47,871 INFO Recording stopped: D:\Recordings\camera_1_-_ptz\2026-09-13\10-25-45_4k.mp4
+2026-09-13 10:25:47,878 INFO Recording stopped: D:\Recordings\camera_2_-_webcam\2026-09-13\10-25-35_4k.mp4
+2026-09-13 10:29:18,437 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-13 10:29:18,438 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-13 10:29:19,400 INFO YOLO person detector loaded
+2026-09-13 10:29:19,421 INFO YOLO person detector loaded
+2026-09-13 10:29:20,612 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 10:29:20,612 INFO Camera 1 - PTZ connected
+2026-09-13 10:29:21,848 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-13 10:29:21,848 INFO Camera 2 - Webcam connected
+2026-09-13 10:29:41,882 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-29-41_4k.mp4
+2026-09-13 10:29:41,898 INFO Recording started: D:\Recordings\Camera 2 - Webcam\Active\2026-09-13\10-29-41_4k.mp4
+2026-09-13 10:29:49,942 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-29-41_4k.mp4
+2026-09-13 10:29:49,943 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-29-49_144p.mp4
+2026-09-13 10:29:52,510 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-29-49_144p.mp4
+2026-09-13 10:29:52,512 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-29-52_4k.mp4
+2026-09-13 10:29:54,671 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-29-52_4k.mp4
+2026-09-13 10:29:54,672 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-29-54_144p.mp4
+2026-09-13 10:29:55,938 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-29-54_144p.mp4
+2026-09-13 10:29:55,939 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-29-55_4k.mp4
+2026-09-13 10:30:03,107 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-29-55_4k.mp4
+2026-09-13 10:30:03,146 INFO Recording stopped: D:\Recordings\Camera 2 - Webcam\Active\2026-09-13\10-29-41_4k.mp4
+2026-09-13 10:30:05,960 INFO Recording started: D:\Recordings\Camera 2 - Webcam\Active\2026-09-13\10-30-05_4k.mp4
+2026-09-13 10:30:05,973 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-30-05_4k.mp4
+2026-09-13 10:30:08,706 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-30-05_4k.mp4
+2026-09-13 10:30:08,714 INFO Recording stopped: D:\Recordings\Camera 2 - Webcam\Active\2026-09-13\10-30-05_4k.mp4
+2026-09-13 10:31:47,472 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-13 10:31:47,473 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-13 10:31:48,445 INFO YOLO person detector loaded
+2026-09-13 10:31:48,465 INFO YOLO person detector loaded
+2026-09-13 10:31:49,716 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 10:31:49,716 INFO Camera 1 - PTZ connected
+2026-09-13 10:31:50,885 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-13 10:31:50,885 INFO Camera 2 - Webcam connected
+2026-09-13 10:31:54,599 INFO Recording started: D:\Recordings\Camera 2 - Webcam\Active\2026-09-13\10-31-54_4k.mp4
+2026-09-13 10:31:54,608 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-31-54_4k.mp4
+2026-09-13 10:32:03,044 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-31-54_4k.mp4
+2026-09-13 10:32:03,046 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-32-03_144p.mp4
+2026-09-13 10:32:14,138 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-32-03_144p.mp4
+2026-09-13 10:32:14,140 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-32-14_4k.mp4
+2026-09-13 10:32:16,307 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-32-14_4k.mp4
+2026-09-13 10:32:16,327 INFO Recording stopped: D:\Recordings\Camera 2 - Webcam\Active\2026-09-13\10-31-54_4k.mp4
+2026-09-13 10:36:28,833 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-13 10:36:28,837 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-13 10:36:30,412 INFO YOLO person detector loaded
+2026-09-13 10:36:30,444 INFO YOLO person detector loaded
+2026-09-13 10:36:31,849 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 10:36:31,849 INFO Camera 1 - PTZ connected
+2026-09-13 10:36:33,112 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-13 10:36:33,112 INFO Camera 2 - Webcam connected
+2026-09-13 10:36:39,844 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-36-39_4k.mp4
+2026-09-13 10:36:39,887 INFO Recording started: D:\Recordings\Camera 2 - Webcam\Active\2026-09-13\10-36-39_4k.mp4
+2026-09-13 10:36:50,742 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-36-39_4k.mp4
+2026-09-13 10:36:50,744 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-36-50_4k.mp4
+2026-09-13 10:36:51,509 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-36-50_4k.mp4
+2026-09-13 10:36:51,517 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-36-51_144p.mp4
+2026-09-13 10:36:52,114 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-36-51_144p.mp4
+2026-09-13 10:36:52,115 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-36-52_144p.mp4
+2026-09-13 10:36:52,177 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-36-52_144p.mp4
+2026-09-13 10:36:52,178 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-36-52_144p.mp4
+2026-09-13 10:36:52,210 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-36-52_144p.mp4
+2026-09-13 10:36:52,211 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-36-52_144p.mp4
+2026-09-13 10:36:52,539 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-36-52_144p.mp4
+2026-09-13 10:36:52,540 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-36-52_144p.mp4
+2026-09-13 10:36:52,572 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-36-52_144p.mp4
+2026-09-13 10:36:52,573 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-36-52_144p.mp4
+2026-09-13 10:36:52,606 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-36-52_144p.mp4
+2026-09-13 10:36:52,607 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-36-52_144p.mp4
+2026-09-13 10:36:57,543 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-36-52_144p.mp4
+2026-09-13 10:36:57,544 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-36-57_144p.mp4
+2026-09-13 10:36:57,612 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-36-57_144p.mp4
+2026-09-13 10:36:57,613 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-36-57_144p.mp4
+2026-09-13 10:37:01,884 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-36-57_144p.mp4
+2026-09-13 10:37:01,884 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-37-01_144p.mp4
+2026-09-13 10:37:01,911 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-37-01_144p.mp4
+2026-09-13 10:37:01,912 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-37-01_144p.mp4
+2026-09-13 10:37:02,747 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-37-01_144p.mp4
+2026-09-13 10:37:02,748 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-37-02_144p.mp4
+2026-09-13 10:37:02,917 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-37-02_144p.mp4
+2026-09-13 10:37:02,918 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-37-02_144p.mp4
+2026-09-13 10:37:02,975 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-37-02_144p.mp4
+2026-09-13 10:37:02,976 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-37-02_144p.mp4
+2026-09-13 10:37:03,706 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-37-02_144p.mp4
+2026-09-13 10:37:03,708 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-37-03_4k.mp4
+2026-09-13 10:37:07,411 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-37-03_4k.mp4
+2026-09-13 10:37:07,465 INFO Recording stopped: D:\Recordings\Camera 2 - Webcam\Active\2026-09-13\10-36-39_4k.mp4
+2026-09-13 10:39:03,695 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-13 10:39:03,697 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-13 10:39:05,209 INFO YOLO person detector loaded
+2026-09-13 10:39:05,237 INFO YOLO person detector loaded
+2026-09-13 10:39:06,746 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 10:39:06,746 INFO Camera 1 - PTZ connected
+2026-09-13 10:39:07,865 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-13 10:39:07,869 INFO Camera 2 - Webcam connected
+2026-09-13 10:39:22,677 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-39-22_144p.mp4
+2026-09-13 10:39:22,731 INFO Recording started: D:\Recordings\Camera 2 - Webcam\Active\2026-09-13\10-39-22_4k.mp4
+2026-09-13 10:39:24,081 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-39-22_144p.mp4
+2026-09-13 10:39:24,083 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-39-24_4k.mp4
+2026-09-13 10:39:27,777 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-39-24_4k.mp4
+2026-09-13 10:39:27,779 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-39-27_4k.mp4
+2026-09-13 10:39:28,543 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-39-27_4k.mp4
+2026-09-13 10:39:28,544 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-39-28_144p.mp4
+2026-09-13 10:39:48,976 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\10-39-28_144p.mp4
+2026-09-13 10:39:48,984 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-39-48_4k.mp4
+2026-09-13 10:39:51,239 INFO Recording stopped: D:\Recordings\Camera 2 - Webcam\Active\2026-09-13\10-39-22_4k.mp4
+2026-09-13 10:39:51,246 INFO Recording stopped: D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\10-39-48_4k.mp4
+2026-09-13 10:57:10,952 INFO Camera 1 - PTZ idle for 300s; requesting experimental UVC wakeup preset 1
+2026-09-13 10:57:11,041 INFO Camera 1 - PTZ UVC feed closed to trigger wakeup preset 1
+2026-09-13 10:57:14,306 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 10:57:14,307 INFO Camera 1 - PTZ connected
+2026-09-13 11:12:59,058 WARNING Camera 1 - PTZ disconnected
+2026-09-13 11:34:04,679 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 11:34:04,679 INFO Camera 1 - PTZ connected
+2026-09-13 11:34:17,472 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-13 11:34:17,473 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-13 11:34:18,463 INFO YOLO person detector loaded
+2026-09-13 11:34:18,482 INFO YOLO person detector loaded
+2026-09-13 11:34:19,902 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 11:34:19,902 INFO Camera 1 - PTZ connected
+2026-09-13 11:34:20,522 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-13 11:34:20,522 INFO Camera 2 - Webcam connected
+2026-09-13 11:34:37,991 WARNING Camera 1 - PTZ disconnected
+2026-09-13 11:34:45,595 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 11:34:45,596 INFO Camera 1 - PTZ connected
+2026-09-13 11:39:18,478 INFO Camera 1 - PTZ idle for 300s; requesting experimental UVC wakeup preset 1
+2026-09-13 11:39:18,744 INFO Camera 1 - PTZ UVC feed closed to trigger wakeup preset 1
+2026-09-13 11:39:22,405 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 11:39:22,405 INFO Camera 1 - PTZ connected
+2026-09-13 11:41:26,213 WARNING Camera 1 - PTZ disconnected
+2026-09-13 11:41:33,677 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 11:41:33,677 INFO Camera 1 - PTZ connected
+2026-09-13 11:43:32,799 WARNING Camera 1 - PTZ disconnected
+2026-09-13 11:43:38,345 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-13 11:43:38,346 INFO Camera 1 - PTZ connected
+2026-09-13 11:47:15,437 INFO Recording started: D:\Recordings\Camera 2 - Webcam\Active\2026-09-13\11-47-15_4k.mp4
+2026-09-13 11:47:15,459 INFO Recording started: D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\11-47-15_144p.mp4

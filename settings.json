@@ -1,0 +1,28 @@
+{
+  "cameras": [
+    {
+      "label": "Camera 1 - PTZ",
+      "device_index": 1
+    },
+    {
+      "label": "Camera 2 - Webcam",
+      "device_index": 0
+    }
+  ],
+  "recordings_dir": "D:\\Recordings",
+  "person_confidence": 0.45,
+  "person_frames_required": 20,
+  "no_person_frames_required": 20,
+  "low_width": 256,
+  "low_height": 144,
+  "capture_width": 3840,
+  "capture_height": 2160,
+  "segment_seconds": 300,
+  "minimum_free_percent": 20.0,
+  "cleanup_target_percent": 25.0,
+  "auto_cleanup": true,
+  "detection_enabled": true,
+  "ptz_usb_wakeup_enabled": true,
+  "ptz_idle_return_seconds": 300,
+  "ptz_home_preset": 1
+}
