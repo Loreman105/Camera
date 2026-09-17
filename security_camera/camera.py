@@ -58,11 +58,21 @@ class CameraWorker:
     def __init__(self, camera: CameraConfig, config: AppConfig, storage: StorageMonitor):
         self.camera, self.config, self.storage = camera, config, storage
         self.status, self.latest_frame = CameraStatus(), None
-        self.detector = PersonDetector(config.person_confidence)
-        self.recorder = SegmentRecorder(Path(config.recordings_dir), camera.label, config.segment_seconds, (config.low_width, config.low_height))
+        self.detector = PersonDetector(config.person_confidence, config.inference_device)
+        self.recorder = SegmentRecorder(
+            Path(config.recordings_dir), camera.label, config.segment_seconds,
+            (config.low_width, config.low_height), config.video_encoder,
+        )
         self._stop = threading.Event(); self._record = threading.Event(); self._lock = threading.Lock()
         self._verification_lock = threading.Lock()
+        self._active_check_cancel = threading.Event()
+        self._active_check_requested = threading.Event()
         self.active_check_running = False
+        self.active_check_total_frames = 0
+        self.active_check_processed_frames = 0
+        self.active_check_total_files = 0
+        self.active_check_processed_files = 0
+        self.active_check_started_at = 0.0
         # Keep one newest original frame: an overloaded model may drop stale work,
         # but never makes capture wait or changes the detector input resolution.
         self._detection_queue: queue.Queue = queue.Queue(maxsize=1)
@@ -116,11 +126,15 @@ class CameraWorker:
         while not self._stop.is_set():
             with self._verification_lock:
                 for path in folder.rglob("*.mp4") if folder.exists() else ():
-                    if self._stop.is_set():
+                    # A manual exhaustive pass takes precedence over routine
+                    # sampled verification; release the shared model promptly.
+                    if self._stop.is_set() or self._active_check_requested.is_set():
                         break
                     if self.recorder.path == path or path.name in verified:
                         continue
-                    detected = self.detector.video_has_person(path)
+                    detected = self.detector.video_has_person(
+                        path, progress=lambda _frame: not self._active_check_requested.is_set(),
+                    )
                     if detected is None:
                         continue
                     try:
@@ -130,29 +144,87 @@ class CameraWorker:
                         logging.warning("Unable to update verified recording %s: %s", path, exc)
             self._stop.wait(30)
 
-    def check_active_recordings(self) -> bool:
-        """Start an exhaustive person check for this camera's completed Active files."""
-        if not self.detector.available or not self._verification_lock.acquire(blocking=False):
+    def check_active_recordings(self, folder: Path | None = None, excluded_paths: set[Path] | None = None) -> bool:
+        """Toggle an exhaustive check of completed 4K recordings in ``folder``."""
+        if self.active_check_running:
+            self._active_check_cancel.set()
             return False
+        if not self.detector.available:
+            logging.warning("Double-check unavailable for %s: %s", self.camera.label, self.detector.error or "YOLO is not loaded")
+            return False
+        self._active_check_cancel.clear()
+        self._active_check_requested.set()
+        self.active_check_total_frames = 0
+        self.active_check_processed_frames = 0
+        self.active_check_total_files = 0
+        self.active_check_processed_files = 0
+        self.active_check_started_at = time.monotonic()
         self.active_check_running = True
-        threading.Thread(target=self._check_active_recordings, name=f"{self.camera.label} active check", daemon=True).start()
+        self.status.error = "Double-check waiting for background verification"
+        root = folder or Path(self.config.recordings_dir) / self.camera.label
+        excluded = excluded_paths or set()
+        threading.Thread(
+            target=self._check_active_recordings, args=(root, excluded),
+            name=f"{self.camera.label} active check", daemon=True,
+        ).start()
         return True
 
-    def _check_active_recordings(self) -> None:
-        folder = Path(self.config.recordings_dir) / self.camera.label / "Active"
+    @staticmethod
+    def _frame_count(path: Path) -> int:
+        capture = cv2.VideoCapture(str(path))
         try:
-            for path in folder.rglob("*.mp4") if folder.exists() else ():
-                if self._stop.is_set() or self.recorder.path == path:
+            return max(0, int(capture.get(cv2.CAP_PROP_FRAME_COUNT)))
+        finally:
+            capture.release()
+
+    def _check_active_recordings(self, folder: Path, excluded_paths: set[Path]) -> None:
+        acquired = False
+        try:
+            while not self._stop.is_set() and not self._active_check_cancel.is_set():
+                if self._verification_lock.acquire(timeout=0.2):
+                    acquired = True
+                    break
+            else:
+                return
+            if self._active_check_cancel.is_set() or self._stop.is_set():
+                return
+            self._active_check_requested.clear()
+            # The manual double-check is intentionally exhaustive, but only for
+            # 4K sources. Low-resolution inactive derivatives do not need to be
+            # re-encoded, and an in-progress recording must never be opened.
+            paths = [path for path in folder.rglob("*_4k.mp4") if path not in excluded_paths] if folder.exists() else []
+            self.active_check_total_files = len(paths)
+            self.status.error = f"Double-checking {len(paths):,} 4K clips"
+            logging.info("Double-check started for %s: %s completed 4K recordings", folder, len(paths))
+            self.active_check_total_frames = sum(self._frame_count(path) for path in paths)
+            for path in paths:
+                if self._stop.is_set() or self._active_check_cancel.is_set() or path in excluded_paths:
                     continue
-                detected = self.detector.video_has_person(path, sample_every=1)
-                if detected is False:
+                detected = self.detector.video_has_person(path, sample_every=1, progress=self._active_check_progress)
+                if detected is False and path.parent.parent.name in ("Active", "Inactive"):
                     try:
                         SegmentRecorder.downsize_to_inactive(path, (self.config.low_width, self.config.low_height))
                     except OSError as exc:
                         logging.warning("Unable to downsize active recording %s: %s", path, exc)
+                elif detected is True and path.parent.parent.name == "Inactive":
+                    try:
+                        SegmentRecorder.move_to_detection_bucket(path, True)
+                    except OSError as exc:
+                        logging.warning("Unable to move person-containing recording %s: %s", path, exc)
+                self.active_check_processed_files += 1
         finally:
+            self._active_check_requested.clear()
+            if acquired:
+                self._verification_lock.release()
             self.active_check_running = False
-            self._verification_lock.release()
+            cancelled = self._active_check_cancel.is_set() or self._stop.is_set()
+            state = "cancelled" if cancelled else "complete"
+            self.status.error = f"Double-check {state}: {self.active_check_processed_files:,}/{self.active_check_total_files:,} 4K clips"
+            logging.info("Double-check %s for %s: %s/%s 4K recordings", state, folder, self.active_check_processed_files, self.active_check_total_files)
+
+    def _active_check_progress(self, processed_frames: int) -> bool:
+        self.active_check_processed_frames += 1
+        return not self._active_check_cancel.is_set() and not self._stop.is_set()
 
     def ptz_overlay(self) -> str | None:
         """Human-readable state of the USB wakeup experiment for the live overlay."""

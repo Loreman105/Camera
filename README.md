@@ -18,9 +18,17 @@ folder. `settings.json`, logs, and recordings are local. Install `ultralytics` t
 enable YOLO detection; until then the UI explicitly shows that detection is
 unavailable rather than claiming a false result.
 
-FFmpeg is optional for this first prototype. OpenCV/MJPEG is used as a dependable
-fallback. If `ffmpeg` is found, its compatible hardware encoders are reported in
-the log for the next recorder iteration.
+YOLO automatically uses CUDA GPU 0 with FP16 inference when the installed
+PyTorch build supports CUDA. Set `inference_device` to `"cpu"` or a GPU index
+such as `"0"` in `settings.json` to override automatic selection. A CUDA-enabled
+PyTorch build and compatible graphics driver are required; otherwise the app
+falls back to CPU and logs the reason.
+
+For recording, `video_encoder` defaults to `"auto"`: when FFmpeg exposes
+`h264_nvenc`, recordings are encoded by NVIDIA NVENC. Set it to `"nvidia"` to
+prefer NVENC explicitly, or `"cpu"` to force the portable OpenCV writer. If
+FFmpeg, NVENC, or the driver is unavailable, the app logs the reason and falls
+back to OpenCV rather than stopping capture.
 
 ## Storage defaults
 
@@ -37,10 +45,14 @@ This second pass also runs over recordings already present when the application
 starts and moves each file to `Active` or `Inactive` based on the sampled frames.
 Files remain unchanged when YOLO is unavailable or cannot open the recording.
 
-Use **CHECK ACTIVE 4K** to exhaustively inspect every frame in completed `Active`
-recordings. If no frame contains a person, the recording is transcoded to 256×144,
-moved to `Inactive`, and the original 4K file is deleted. This can take time and
-runs in the background; the button is disabled while a check is in progress.
+Use **DOUBLE-CHECK RECORDINGS** to exhaustively inspect every frame in every
+completed `*_4k.mp4` recording beneath `D:\Recordings`, including recordings
+outside the configured camera folders. Open segments are excluded. If no frame
+contains a person, a 4K recording is transcoded to
+256×144, moved to `Inactive`, and the original 4K file is deleted. If a person is
+found in an `Inactive` recording, it is moved to `Active`. This runs in the
+background; the button changes to **STOP DOUBLE-CHECK** while running and can be
+pressed again to cancel between frames.
 
 Recording segments are organized as:
 

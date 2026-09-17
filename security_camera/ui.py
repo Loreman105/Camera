@@ -63,8 +63,12 @@ class SecurityUI:
         actions = tk.Frame(bottom, bg=BG); actions.pack(side="right", padx=(14, 0))
         self.record_button = self._button(actions, "● START RECORDING", self.app.toggle_recording, GREEN, "#061b12")
         self.record_button.pack(side="left", padx=3)
-        self.check_button = self._button(actions, "CHECK ACTIVE 4K", self.app.check_active_recordings, AMBER, "#3a2a12")
+        self.check_button = self._button(actions, "DOUBLE-CHECK RECORDINGS", self.app.check_active_recordings, AMBER, "#3a2a12")
         self.check_button.pack(side="left", padx=3)
+        self.check_progress = ttk.Progressbar(actions, length=150, mode="determinate", maximum=1)
+        self.check_progress.pack(side="left", padx=5)
+        self.check_eta = tk.Label(actions, text="", font=("Segoe UI", 8), bg=BG, fg=MUTED, width=16, anchor="w")
+        self.check_eta.pack(side="left", padx=(0, 3))
         for label, command, fg, bg in (("DETECTION", self.app.toggle_detection, BLUE, "#102a40"), ("SETTINGS", self.settings, TEXT, "#263548"), ("⛶", self.fullscreen, TEXT, "#263548"), ("EXIT", self.app.close, MUTED, "#263548")):
             self._button(actions, label, command, fg, bg).pack(side="left", padx=3)
 
@@ -109,8 +113,29 @@ class SecurityUI:
                     cv2.rectangle(preview, (0, 0), (640, 31), (0, 0, 0), -1); color = (0, 165, 255) if "SENT" in overlay else (255, 169, 53)
                     cv2.putText(preview, overlay, (9, 21), cv2.FONT_HERSHEY_SIMPLEX, .47, color, 1, cv2.LINE_AA)
                 photo = ImageTk.PhotoImage(Image.fromarray(cv2.cvtColor(preview, cv2.COLOR_BGR2RGB))); image.config(image=photo, text=""); image.image = photo
-            checking = any(worker.active_check_running for worker in self.app.workers)
-            self.check_button.config(text="CHECKING ACTIVE..." if checking else "CHECK ACTIVE 4K", state="disabled" if checking else "normal")
+        checking = any(worker.active_check_running for worker in self.app.workers)
+        total_frames = sum(worker.active_check_total_frames for worker in self.app.workers)
+        processed_frames = sum(worker.active_check_processed_frames for worker in self.app.workers)
+        progress_value = min(processed_frames, total_frames) if checking else total_frames
+        self.check_progress.configure(maximum=max(1, total_frames), value=progress_value)
+        if checking and processed_frames > 0:
+            started = min((worker.active_check_started_at for worker in self.app.workers if worker.active_check_running), default=time.monotonic())
+            elapsed = max(0.001, time.monotonic() - started)
+            remaining = max(0, int((total_frames - processed_frames) * elapsed / processed_frames))
+            minutes, seconds = divmod(remaining, 60)
+            self.check_eta.config(text=f"{processed_frames:,}/{total_frames:,}  ETA {minutes}:{seconds:02d}")
+        elif checking:
+            files_total = sum(worker.active_check_total_files for worker in self.app.workers)
+            if files_total:
+                self.check_eta.config(text=f"{files_total:,} clips · ETA calculating")
+            else:
+                self.check_eta.config(text="Preparing double-check…")
+        else:
+            self.check_eta.config(text="")
+        if checking:
+            self.check_button.config(text="STOP DOUBLE-CHECK", fg=RED, bg="#2a1117", state="normal")
+        else:
+            self.check_button.config(text="DOUBLE-CHECK RECORDINGS", fg=AMBER, bg="#3a2a12", state="normal")
         self.system.config(text=f"●  {online}/{len(self.cards)} CAMERAS ONLINE", fg=GREEN if online else RED, bg="#123829" if online else "#3d1720")
         free = self.app.storage.last_percent; self.storage_text.config(text="Storage unavailable" if free is None else f"{free:.1f}% FREE · {self.app.config.recordings_dir}"); self.storage_bar["value"] = max(0, min(100, free or 0))
         self.clock.config(text=time.strftime("%A, %B %d  ·  %I:%M:%S %p")); self.root.after(100, self.refresh)

@@ -16,6 +16,10 @@ class AppConfig:
     cameras: list[CameraConfig] = field(default_factory=lambda: [CameraConfig("Camera 1 - PTZ"), CameraConfig("Camera 2 - Webcam")])
     recordings_dir: str = r"D:\Recordings"
     person_confidence: float = 0.45
+    inference_device: str = "auto"
+    # "auto" prefers NVIDIA NVENC when the local FFmpeg supports it.  Set to
+    # "cpu" to force OpenCV's portable writer or "nvidia" to request NVENC.
+    video_encoder: str = "auto"
     person_frames_required: int = 20
     no_person_frames_required: int = 20
     low_width: int = 256

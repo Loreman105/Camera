@@ -45569,3 +45569,103 @@
 2026-09-16 19:43:47,831 INFO Recording verification moved D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\11-49-18_4k.mp4 to D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\11-49-18_4k.mp4
 2026-09-16 19:43:48,993 INFO Recording verification moved D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\11-49-19_144p.mp4 to D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\11-49-19_144p.mp4
 2026-09-16 19:44:35,216 INFO Recording verification moved D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\11-49-33_4k.mp4 to D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\11-49-33_4k.mp4
+2026-09-16 19:48:29,618 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-16 19:48:29,619 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-16 19:48:30,519 INFO YOLO person detector loaded
+2026-09-16 19:48:30,539 INFO YOLO person detector loaded
+2026-09-16 19:48:31,787 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-16 19:48:31,787 INFO Camera 1 - PTZ connected
+2026-09-16 19:48:32,855 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-16 19:48:32,855 INFO Camera 2 - Webcam connected
+2026-09-16 19:53:30,642 INFO Camera 1 - PTZ idle for 300s; requesting experimental UVC wakeup preset 1
+2026-09-16 19:53:30,713 INFO Camera 1 - PTZ UVC feed closed to trigger wakeup preset 1
+2026-09-16 19:53:34,765 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-16 19:53:34,765 INFO Camera 1 - PTZ connected
+2026-09-16 19:55:11,724 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-16 19:55:11,727 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-16 19:55:13,050 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 19:55:13,270 INFO YOLO person detector loaded on cpu
+2026-09-16 19:55:13,270 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 19:55:13,330 INFO YOLO person detector loaded on cpu
+2026-09-16 19:55:16,560 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-16 19:55:16,560 INFO Camera 1 - PTZ connected
+2026-09-16 19:55:17,526 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-16 19:55:17,526 INFO Camera 2 - Webcam connected
+2026-09-16 19:59:29,256 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-16 19:59:29,258 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-16 19:59:30,057 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 19:59:30,180 INFO YOLO person detector loaded on cpu
+2026-09-16 19:59:30,181 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 19:59:30,233 INFO YOLO person detector loaded on cpu
+2026-09-16 19:59:32,137 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-16 19:59:32,137 INFO Camera 1 - PTZ connected
+2026-09-16 19:59:32,664 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-16 19:59:32,665 INFO Camera 2 - Webcam connected
+2026-09-16 20:03:21,056 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-16 20:03:21,057 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-16 20:03:21,942 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 20:03:22,075 INFO YOLO person detector loaded on cpu
+2026-09-16 20:03:22,075 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 20:03:22,132 INFO YOLO person detector loaded on cpu
+2026-09-16 20:03:24,523 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-16 20:03:24,523 INFO Camera 1 - PTZ connected
+2026-09-16 20:03:25,498 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-16 20:03:25,498 INFO Camera 2 - Webcam connected
+2026-09-16 20:05:43,324 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-16 20:05:43,326 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-16 20:05:44,148 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 20:05:44,277 INFO YOLO person detector loaded on cpu
+2026-09-16 20:05:44,277 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 20:05:44,323 INFO YOLO person detector loaded on cpu
+2026-09-16 20:05:45,734 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-16 20:05:45,734 INFO Camera 1 - PTZ connected
+2026-09-16 20:05:48,219 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-16 20:05:48,219 INFO Camera 2 - Webcam connected
+2026-09-16 20:10:44,301 INFO Camera 1 - PTZ idle for 300s; requesting experimental UVC wakeup preset 1
+2026-09-16 20:10:44,388 INFO Camera 1 - PTZ UVC feed closed to trigger wakeup preset 1
+2026-09-16 20:10:48,548 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-16 20:10:48,548 INFO Camera 1 - PTZ connected
+2026-09-16 20:16:35,579 INFO Recording verification moved D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\12-54-37_144p.mp4 to D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\12-54-37_144p.mp4
+2026-09-16 20:16:35,821 INFO Recording verification moved D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\12-56-38_4k.mp4 to D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\12-56-38_4k.mp4
+2026-09-16 20:16:40,092 INFO Recording verification moved D:\Recordings\Camera 1 - PTZ\Inactive\2026-09-13\12-56-39_144p.mp4 to D:\Recordings\Camera 1 - PTZ\Active\2026-09-13\12-56-39_144p.mp4
+2026-09-16 20:18:24,960 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-16 20:18:24,961 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-16 20:18:25,900 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 20:18:26,044 INFO YOLO person detector loaded on cpu
+2026-09-16 20:18:26,044 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 20:18:26,111 INFO YOLO person detector loaded on cpu
+2026-09-16 20:18:27,640 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-16 20:18:27,640 INFO Camera 1 - PTZ connected
+2026-09-16 20:18:28,678 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-16 20:18:28,678 INFO Camera 2 - Webcam connected
+2026-09-16 20:21:14,358 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-16 20:21:14,359 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-16 20:21:15,177 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 20:21:15,301 INFO YOLO person detector loaded on cpu
+2026-09-16 20:21:15,301 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 20:21:15,355 INFO YOLO person detector loaded on cpu
+2026-09-16 20:21:17,003 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-16 20:21:17,003 INFO Camera 1 - PTZ connected
+2026-09-16 20:21:17,729 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-16 20:21:17,729 INFO Camera 2 - Webcam connected
+2026-09-16 20:27:14,902 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-16 20:27:14,903 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-16 20:27:15,947 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 20:27:16,120 INFO YOLO person detector loaded on cpu
+2026-09-16 20:27:16,120 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 20:27:16,174 INFO YOLO person detector loaded on cpu
+2026-09-16 20:27:18,944 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-16 20:27:18,944 INFO Camera 1 - PTZ connected
+2026-09-16 20:27:19,832 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-16 20:27:19,832 INFO Camera 2 - Webcam connected
+2026-09-16 20:31:43,734 INFO Discovered cameras: ['Camera index 0', 'Camera index 1']
+2026-09-16 20:31:43,735 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-16 20:31:44,553 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 20:31:44,682 INFO YOLO person detector loaded on cpu
+2026-09-16 20:31:44,682 INFO CUDA unavailable; using CPU for YOLO
+2026-09-16 20:31:44,735 INFO YOLO person detector loaded on cpu
+2026-09-16 20:31:46,908 INFO Camera 1 - PTZ opened with backend DSHOW
+2026-09-16 20:31:46,908 INFO Camera 1 - PTZ connected
+2026-09-16 20:31:47,863 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-16 20:31:47,863 INFO Camera 2 - Webcam connected
+2026-09-16 20:33:18,982 INFO Double-check cancelled for D:\Recordings: 0/0 4K recordings

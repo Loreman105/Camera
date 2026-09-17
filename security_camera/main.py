@@ -45,9 +45,27 @@ class Application:
         else:
             self.start_recording()
     def toggle_detection(self): self.config.detection_enabled=not self.config.detection_enabled
+    def toggle_clean_data(self):
+        running = [worker for worker in self.workers if worker.active_check_running]
+        if running:
+            # The button represents one root-wide job, so a second click stops
+            # every worker that may be participating in it.
+            for worker in running:
+                worker.check_active_recordings()
+            return 0
+
+        # One worker owns the job to prevent two models from double-checking the
+        # same file. It covers every camera folder and any other 4K recording
+        # below the configured recordings root.
+        worker = next((item for item in self.workers if item.detector.available), None)
+        if worker is None:
+            logging.warning("Double-check unavailable: no YOLO detector is loaded")
+            return 0
+        active_paths = {item.recorder.path for item in self.workers if item.recorder.path is not None}
+        return int(worker.check_active_recordings(Path(self.config.recordings_dir), active_paths))
+    # Retained for callers of the original CHECK ACTIVE 4K button action.
     def check_active_recordings(self):
-        for worker in self.workers:
-            worker.check_active_recordings()
+        return Application.toggle_clean_data(self)
     def save_settings(self): save(self.config,self.settings_path)
     def _storage_housekeeping(self):
         active = {w.recorder.path for w in self.workers if w.recorder.path is not None}

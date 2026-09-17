@@ -11,6 +11,8 @@
   ],
   "recordings_dir": "D:\\Recordings",
   "person_confidence": 0.45,
+  "inference_device": "auto",
+  "video_encoder": "auto",
   "person_frames_required": 20,
   "no_person_frames_required": 20,
   "low_width": 256,
