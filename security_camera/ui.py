@@ -63,6 +63,8 @@ class SecurityUI:
         actions = tk.Frame(bottom, bg=BG); actions.pack(side="right", padx=(14, 0))
         self.record_button = self._button(actions, "● START RECORDING", self.app.toggle_recording, GREEN, "#061b12")
         self.record_button.pack(side="left", padx=3)
+        self.check_button = self._button(actions, "CHECK ACTIVE 4K", self.app.check_active_recordings, AMBER, "#3a2a12")
+        self.check_button.pack(side="left", padx=3)
         for label, command, fg, bg in (("DETECTION", self.app.toggle_detection, BLUE, "#102a40"), ("SETTINGS", self.settings, TEXT, "#263548"), ("⛶", self.fullscreen, TEXT, "#263548"), ("EXIT", self.app.close, MUTED, "#263548")):
             self._button(actions, label, command, fg, bg).pack(side="left", padx=3)
 
@@ -107,6 +109,8 @@ class SecurityUI:
                     cv2.rectangle(preview, (0, 0), (640, 31), (0, 0, 0), -1); color = (0, 165, 255) if "SENT" in overlay else (255, 169, 53)
                     cv2.putText(preview, overlay, (9, 21), cv2.FONT_HERSHEY_SIMPLEX, .47, color, 1, cv2.LINE_AA)
                 photo = ImageTk.PhotoImage(Image.fromarray(cv2.cvtColor(preview, cv2.COLOR_BGR2RGB))); image.config(image=photo, text=""); image.image = photo
+            checking = any(worker.active_check_running for worker in self.app.workers)
+            self.check_button.config(text="CHECKING ACTIVE..." if checking else "CHECK ACTIVE 4K", state="disabled" if checking else "normal")
         self.system.config(text=f"●  {online}/{len(self.cards)} CAMERAS ONLINE", fg=GREEN if online else RED, bg="#123829" if online else "#3d1720")
         free = self.app.storage.last_percent; self.storage_text.config(text="Storage unavailable" if free is None else f"{free:.1f}% FREE · {self.app.config.recordings_dir}"); self.storage_bar["value"] = max(0, min(100, free or 0))
         self.clock.config(text=time.strftime("%A, %B %d  ·  %I:%M:%S %p")); self.root.after(100, self.refresh)

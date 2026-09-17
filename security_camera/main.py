@@ -45,6 +45,9 @@ class Application:
         else:
             self.start_recording()
     def toggle_detection(self): self.config.detection_enabled=not self.config.detection_enabled
+    def check_active_recordings(self):
+        for worker in self.workers:
+            worker.check_active_recordings()
     def save_settings(self): save(self.config,self.settings_path)
     def _storage_housekeeping(self):
         active = {w.recorder.path for w in self.workers if w.recorder.path is not None}

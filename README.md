@@ -32,6 +32,16 @@ substantial further reduction in 4K event storage, install FFmpeg with an H.265
 hardware encoder (NVENC, Quick Sync, or AMD AMF); the current OpenCV fallback is
 intended for reliability, not maximum compression.
 
+Completed recordings are periodically sampled again with the same YOLO model.
+This second pass also runs over recordings already present when the application
+starts and moves each file to `Active` or `Inactive` based on the sampled frames.
+Files remain unchanged when YOLO is unavailable or cannot open the recording.
+
+Use **CHECK ACTIVE 4K** to exhaustively inspect every frame in completed `Active`
+recordings. If no frame contains a person, the recording is transcoded to 256×144,
+moved to `Inactive`, and the original 4K file is deleted. This can take time and
+runs in the background; the button is disabled while a check is in progress.
+
 Recording segments are organized as:
 
 ```text

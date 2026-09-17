@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import shutil
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -64,3 +65,55 @@ class SegmentRecorder:
         self.writer = self.path = self.started_at = None
         self.mode = None
         self.bucket = None
+
+    @staticmethod
+    def move_to_detection_bucket(path: Path, detected: bool) -> Path:
+        """Move a completed recording to the bucket selected by verification."""
+        bucket = SegmentRecorder._folder_name(detected)
+        if len(path.parents) < 2 or path.parent.parent.name not in ("Active", "Inactive"):
+            return path
+        destination = path.parent.parent.parent / bucket / path.parent.name / path.name
+        if destination == path:
+            return path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if destination.exists():
+            destination.unlink()
+        shutil.move(str(path), str(destination))
+        logging.info("Recording verification moved %s to %s", path, destination)
+        return destination
+
+    @staticmethod
+    def downsize_to_inactive(path: Path, low_size: tuple[int, int]) -> Path | None:
+        """Create a 144p inactive copy, then remove the original active file."""
+        if path.parent.parent.name != "Active":
+            return None
+        destination = path.parent.parent.parent / "Inactive" / path.parent.name / path.name.replace("_4k.mp4", "_low.mp4")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        temporary = destination.with_name(f".{destination.stem}.tmp.mp4")
+        capture = cv2.VideoCapture(str(path))
+        if not capture.isOpened():
+            capture.release()
+            return None
+        fps = capture.get(cv2.CAP_PROP_FPS) or 30
+        writer = cv2.VideoWriter(str(temporary), cv2.VideoWriter_fourcc(*"mp4v"), fps, low_size)
+        if not writer.isOpened():
+            capture.release()
+            return None
+        frames = 0
+        try:
+            while True:
+                ok, frame = capture.read()
+                if not ok:
+                    break
+                writer.write(cv2.resize(frame, low_size, interpolation=cv2.INTER_AREA))
+                frames += 1
+        finally:
+            capture.release()
+            writer.release()
+        if frames == 0:
+            temporary.unlink(missing_ok=True)
+            return None
+        temporary.replace(destination)
+        path.unlink()
+        logging.info("Downsized person-free recording %s to %s", path, destination)
+        return destination

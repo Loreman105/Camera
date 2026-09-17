@@ -61,6 +61,8 @@ class CameraWorker:
         self.detector = PersonDetector(config.person_confidence)
         self.recorder = SegmentRecorder(Path(config.recordings_dir), camera.label, config.segment_seconds, (config.low_width, config.low_height))
         self._stop = threading.Event(); self._record = threading.Event(); self._lock = threading.Lock()
+        self._verification_lock = threading.Lock()
+        self.active_check_running = False
         # Keep one newest original frame: an overloaded model may drop stale work,
         # but never makes capture wait or changes the detector input resolution.
         self._detection_queue: queue.Queue = queue.Queue(maxsize=1)
@@ -69,10 +71,12 @@ class CameraWorker:
         self._usb_wakeup_used = False
         self.thread = threading.Thread(target=self._run, name=camera.label, daemon=True)
         self.detector_thread = threading.Thread(target=self._detect_loop, name=f"{camera.label} detector", daemon=True)
+        self.verifier_thread = threading.Thread(target=self._verify_recordings_loop, name=f"{camera.label} verifier", daemon=True)
 
-    def start(self): self.thread.start(); self.detector_thread.start()
+    def start(self): self.thread.start(); self.detector_thread.start(); self.verifier_thread.start()
     def set_recording(self, enabled: bool): (self._record.set() if enabled else self._record.clear())
-    def stop(self): self._stop.set(); self.thread.join(timeout=3); self.detector_thread.join(timeout=3); self.recorder.close()
+    def stop(self):
+        self._stop.set(); self.thread.join(timeout=3); self.detector_thread.join(timeout=3); self.verifier_thread.join(timeout=3); self.recorder.close()
 
     def _update_detection(self, detected: bool) -> None:
         s = self.status
@@ -105,6 +109,50 @@ class CameraWorker:
                 continue
             if self.config.detection_enabled and self.detector.available:
                 self._update_detection(self.detector.has_person(frame))
+
+    def _verify_recordings_loop(self) -> None:
+        verified: set[str] = set()
+        folder = Path(self.config.recordings_dir) / self.camera.label
+        while not self._stop.is_set():
+            with self._verification_lock:
+                for path in folder.rglob("*.mp4") if folder.exists() else ():
+                    if self._stop.is_set():
+                        break
+                    if self.recorder.path == path or path.name in verified:
+                        continue
+                    detected = self.detector.video_has_person(path)
+                    if detected is None:
+                        continue
+                    try:
+                        SegmentRecorder.move_to_detection_bucket(path, detected)
+                        verified.add(path.name)
+                    except OSError as exc:
+                        logging.warning("Unable to update verified recording %s: %s", path, exc)
+            self._stop.wait(30)
+
+    def check_active_recordings(self) -> bool:
+        """Start an exhaustive person check for this camera's completed Active files."""
+        if not self.detector.available or not self._verification_lock.acquire(blocking=False):
+            return False
+        self.active_check_running = True
+        threading.Thread(target=self._check_active_recordings, name=f"{self.camera.label} active check", daemon=True).start()
+        return True
+
+    def _check_active_recordings(self) -> None:
+        folder = Path(self.config.recordings_dir) / self.camera.label / "Active"
+        try:
+            for path in folder.rglob("*.mp4") if folder.exists() else ():
+                if self._stop.is_set() or self.recorder.path == path:
+                    continue
+                detected = self.detector.video_has_person(path, sample_every=1)
+                if detected is False:
+                    try:
+                        SegmentRecorder.downsize_to_inactive(path, (self.config.low_width, self.config.low_height))
+                    except OSError as exc:
+                        logging.warning("Unable to downsize active recording %s: %s", path, exc)
+        finally:
+            self.active_check_running = False
+            self._verification_lock.release()
 
     def ptz_overlay(self) -> str | None:
         """Human-readable state of the USB wakeup experiment for the live overlay."""
