@@ -107,6 +107,10 @@ class SecurityUI:
         tk.Label(panel, text=f"Recorder: {self.app.config.processor_server_url}  ·  Devices: {self.app.config.processing_devices}", font=("Segoe UI", 10), bg=BG, fg=MUTED).pack(anchor="w", pady=(6, 16))
         self.process_status = tk.Label(panel, text="Ready", font=("Segoe UI", 11, "bold"), bg=SURFACE, fg=TEXT, anchor="w", padx=16, pady=14)
         self.process_status.pack(fill="x", pady=(0, 14))
+        self.process_progress = ttk.Progressbar(panel, mode="determinate", maximum=1, value=0)
+        self.process_progress.pack(fill="x", pady=(0, 5))
+        self.process_progress_label = tk.Label(panel, text="0 / 0 clips", font=("Segoe UI", 9, "bold"), bg=BG, fg=MUTED, anchor="w")
+        self.process_progress_label.pack(fill="x", pady=(0, 10))
         self.process_elapsed = tk.Label(panel, text="Elapsed 00:00:00", font=("Segoe UI", 9, "bold"), bg=BG, fg=MUTED, anchor="w")
         self.process_elapsed.pack(fill="x", pady=(0, 10))
         metrics = tk.Frame(panel, bg=BG); metrics.pack(fill="x", pady=(0, 14))
@@ -199,6 +203,11 @@ class SecurityUI:
     def refresh(self):
         if self.app.mode == "Process":
             self.process_status.config(text=getattr(self.app, "processing_status", "Ready"))
+            completed = getattr(self.app, "processing_completed", 0)
+            total = getattr(self.app, "processing_total", 0)
+            self.process_progress.configure(maximum=max(1, total), value=min(completed, total))
+            eta = self._duration_text(getattr(self.app, "processing_eta", 0))
+            self.process_progress_label.config(text=f"{completed:,} / {total:,} clips  ·  ETA {eta}" if total else "0 / 0 clips")
             self._refresh_process_metrics()
             self.root.after(500, self.refresh)
             return

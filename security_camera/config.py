@@ -41,6 +41,7 @@ class AppConfig:
     remote_stream_port: int = 8765
     processor_server_url: str = ""
     processing_devices: str = "auto"
+    processing_batch_size: int | str = "auto"
 
 
 def load(path: Path) -> AppConfig:

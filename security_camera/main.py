@@ -137,6 +137,9 @@ class Application:
         if getattr(self, "processing_thread", None) and self.processing_thread.is_alive():
             return False
         self.processing_status = "Processing recordings..."
+        self.processing_completed = 0
+        self.processing_total = 0
+        self.processing_eta = 0
         self.processing_started_at = time.monotonic()
         self.processing_thread = threading.Thread(
             target=self._process_remote_worker, args=(server,), name="remote processor", daemon=True,
@@ -146,13 +149,21 @@ class Application:
     def _process_remote_worker(self, server):
         try:
             from process_recordings import process_recordings
-            process_recordings(server, self.config.processing_devices, status_callback=self._set_processing_status)
+            process_recordings(
+                server, self.config.processing_devices,
+                status_callback=self._set_processing_status,
+                progress_callback=self._set_processing_progress,
+            )
             self._set_processing_status("Processing complete")
         except Exception as exc:
             logging.exception("Remote processing failed")
             self._set_processing_status(f"Processing failed: {exc}")
     def _set_processing_status(self, status):
         self.processing_status = status
+    def _set_processing_progress(self, completed, total, eta):
+        self.processing_completed = completed
+        self.processing_total = total
+        self.processing_eta = eta
     def _stream_frames(self):
         frames = []
         for worker in self.workers:
@@ -162,14 +173,16 @@ class Application:
     def _remote_recordings(self):
         active_paths = {worker.recorder.path for worker in self.workers if worker.recorder.path is not None}
         root = Path(self.config.recordings_dir)
-        return [path for path in root.rglob("*.mp4") if path not in active_paths] if root.exists() else []
+        return [path for path in root.rglob("*.mp4")
+            if path not in active_paths and path.parent.parent.name == "Active"] if root.exists() else []
     def _apply_remote_result(self, path: Path, detected: bool):
         if not path.exists():
             raise OSError(f"Recording no longer exists: {path}")
-        if not detected and path.name.lower().endswith("_4k.mp4"):
-            SegmentRecorder.downsize_to_inactive(path, (self.config.low_width, self.config.low_height))
+        if detected:
+            SegmentRecorder.move_to_detection_bucket(path, True)
         else:
-            SegmentRecorder.move_to_detection_bucket(path, detected)
+            SegmentRecorder.move_to_detection_bucket(path, False)
+            logging.info("Moved person-free remote recording to Inactive: %s", path)
         logging.info("Remote recording verification complete: %s detected=%s", path, detected)
     def _storage_housekeeping(self):
         active = {w.recorder.path for w in self.workers if w.recorder.path is not None}

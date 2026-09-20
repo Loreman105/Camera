@@ -20,12 +20,13 @@ class PersonDetector:
     verification_tuning_interval_seconds = 60.0
     verification_tuning_batches = 1
     verification_width = 640
-    def __init__(self, confidence: float, device: str = "auto"):
+    def __init__(self, confidence: float, device: str = "auto", processing_batch_size: int | str = "auto"):
         self.confidence = confidence
         self.error: str | None = None
         self.model = None
         self.device = self._select_device(device)
         self.use_half = self.device != "cpu"
+        self.processing_batch_size = processing_batch_size
         self.current_verification_batch_size = self.minimum_verification_batch_size
         self._verification_performance = {}
         self._verification_failed_sizes = set()
@@ -326,6 +327,79 @@ class PersonDetector:
                                 self._verification_performance, self._verification_failed_sizes,
                             )
                 frame_index += 1
+        except Exception as exc:
+            self.error = f"Recording verification error: {exc}"
+            logging.exception("Recording verification failure for %s", path)
+            return None
+        finally:
+            capture.release()
+
+    def video_person_frame_count(self, path, progress=None) -> int | None:
+        """Check every frame and return how many frames contain a person."""
+        if not self.model:
+            return None
+        capture = cv2.VideoCapture(str(path))
+        if not capture.isOpened():
+            logging.warning("Unable to open recording for verification: %s", path)
+            capture.release()
+            return None
+        person_frames = 0
+        frame_count = 0
+        batch_frames = []
+        auto_batch = str(self.processing_batch_size).strip().lower() == "auto"
+        batch_size = 32 if auto_batch else min(max(1, int(self.processing_batch_size)), self.maximum_verification_batch_size)
+
+        def detect_batch() -> None:
+            nonlocal person_frames, batch_size
+            if not batch_frames:
+                return
+            pending = list(batch_frames)
+            batch_frames.clear()
+            while pending:
+                current_size = min(batch_size, len(pending))
+                current = pending[:current_size]
+                while True:
+                    try:
+                        results = self._detect_batch(current)
+                        break
+                    except (RuntimeError, MemoryError) as exc:
+                        if not auto_batch or current_size <= 1 or "out of memory" not in str(exc).lower():
+                            raise
+                        current_size = max(1, current_size // 2)
+                        current = pending[:current_size]
+                        batch_size = current_size
+                        try:
+                            import torch
+                            torch.cuda.empty_cache()
+                        except (ImportError, RuntimeError):
+                            pass
+                if auto_batch and self.device.startswith("cuda"):
+                    try:
+                        import torch
+                        total_memory = torch.cuda.get_device_properties(self.device).total_memory
+                        used_memory = torch.cuda.memory_reserved(self.device)
+                        usage = used_memory / max(1, total_memory)
+                        if usage < 0.60:
+                            batch_size = min(self.maximum_verification_batch_size, max(batch_size + 1, batch_size * 2))
+                        elif usage > 0.85:
+                            batch_size = max(1, batch_size // 2)
+                    except (ImportError, RuntimeError):
+                        pass
+                person_frames += sum(len(result.boxes) > 0 for result in results)
+                pending = pending[current_size:]
+
+        try:
+            while True:
+                ok, frame = capture.read()
+                if not ok:
+                    detect_batch()
+                    return person_frames
+                frame_count += 1
+                if progress is not None and progress(frame_count) is False:
+                    return None
+                batch_frames.append(self._verification_frame(frame))
+                if len(batch_frames) >= batch_size:
+                    detect_batch()
         except Exception as exc:
             self.error = f"Recording verification error: {exc}"
             logging.exception("Recording verification failure for %s", path)

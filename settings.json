@@ -26,5 +26,7 @@
   "detection_enabled": true,
   "ptz_usb_wakeup_enabled": true,
   "ptz_idle_return_seconds": 300,
+  "processing_batch_size": "auto",
+  "processing_devices": "all",
   "ptz_home_preset": 1
 }
