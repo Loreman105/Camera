@@ -45,14 +45,14 @@ This second pass also runs over recordings already present when the application
 starts and moves each file to `Active` or `Inactive` based on the sampled frames.
 Files remain unchanged when YOLO is unavailable or cannot open the recording.
 
-Use **DOUBLE-CHECK RECORDINGS** to exhaustively inspect every frame in every
-completed `*_4k.mp4` recording beneath `D:\Recordings`, including recordings
-outside the configured camera folders. Open segments are excluded. If no frame
-contains a person, a 4K recording is transcoded to
-256×144, moved to `Inactive`, and the original 4K file is deleted. If a person is
-found in an `Inactive` recording, it is moved to `Active`. This runs in the
-background; the button changes to **STOP DOUBLE-CHECK** while running and can be
-pressed again to cancel between frames.
+Use **DOUBLE-CHECK RECORDINGS** as a toggle to exhaustively inspect every frame
+in completed `Active/*.mp4` recordings beneath `D:\Recordings`. While it is
+running, live detection and routine background verification pause on every
+camera so the manual pass has exclusive use of the inference hardware. Open
+segments are excluded. Clips containing a person remain in `Active`; clips with
+no person are transcoded to 256×144 in `Inactive`, then their original active
+4K file is deleted. The button changes to **STOP DOUBLE-CHECK** while running
+and can be pressed again to cancel between frames.
 
 Recording segments are organized as:
 

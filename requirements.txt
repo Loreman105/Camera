@@ -1,4 +1,5 @@
 opencv-python>=4.10
 Pillow>=10.0
+psutil>=5.9
 # Optional, enables real YOLO person detection (install separately when desired):
 # ultralytics>=8.3

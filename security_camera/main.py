@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+import threading
 import tkinter as tk
 
 from .camera import CameraWorker, discover_cameras, discovered_indexes
@@ -14,6 +15,13 @@ from .ui import SecurityUI
 class Application:
     def __init__(self):
         logging.basicConfig(filename="security_camera.log", level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+        double_check_logger = logging.getLogger("double_check")
+        if not double_check_logger.handlers:
+            handler = logging.FileHandler("double_check.log", encoding="utf-8")
+            handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+            double_check_logger.addHandler(handler)
+        double_check_logger.setLevel(logging.INFO)
+        double_check_logger.propagate = False
         self.settings_path=Path("settings.json"); self.config=load(self.settings_path)
         self.recording_enabled = False
         self.discovered=discover_cameras()
@@ -25,7 +33,8 @@ class Application:
                 camera.device_index = next(available, None)
         self.storage=StorageMonitor(Path(self.config.recordings_dir),self.config.minimum_free_percent,self.config.cleanup_target_percent,self.config.auto_cleanup)
         logging.info("Application startup; FFmpeg hardware encoders: %s", SegmentRecorder.ffmpeg_encoders() or "none/fallback")
-        self.workers=[CameraWorker(c,self.config,self.storage) for c in self.config.cameras]
+        self.double_check_active = threading.Event()
+        self.workers=[CameraWorker(c,self.config,self.storage,self.double_check_active) for c in self.config.cameras]
         for w in self.workers: w.start()
         self.root=tk.Tk(); self.ui=SecurityUI(self.root,self)
         self._storage_housekeeping()
@@ -62,7 +71,8 @@ class Application:
             logging.warning("Double-check unavailable: no YOLO detector is loaded")
             return 0
         active_paths = {item.recorder.path for item in self.workers if item.recorder.path is not None}
-        return int(worker.check_active_recordings(Path(self.config.recordings_dir), active_paths))
+        started = worker.check_active_recordings(Path(self.config.recordings_dir), active_paths)
+        return int(started)
     # Retained for callers of the original CHECK ACTIVE 4K button action.
     def check_active_recordings(self):
         return Application.toggle_clean_data(self)

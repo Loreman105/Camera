@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import cv2
+import psutil
 from PIL import Image, ImageTk
 
 BG, SURFACE, CARD, EDGE = "#0b1018", "#121b28", "#172231", "#29384c"
@@ -16,7 +17,8 @@ class SecurityUI:
     def __init__(self, root, app):
         self.root, self.app, self.cards = root, app, []
         root.title("Sentinel · Local Security Camera")
-        root.geometry("1440x900"); root.minsize(1050, 700); root.configure(bg=BG)
+        screen_height = root.winfo_screenheight()
+        root.geometry(f"1440x{min(900, max(620, screen_height - 120))}"); root.minsize(1050, 620); root.configure(bg=BG)
         self._style(); self._header(); self._cameras(); self._footer()
         root.bind("<Escape>", lambda _e: root.attributes("-fullscreen", False))
         root.bind("<F11>", lambda _e: self.fullscreen())
@@ -27,7 +29,7 @@ class SecurityUI:
         style.configure("Storage.Horizontal.TProgressbar", troughcolor="#263548", background=BLUE, bordercolor="#263548", lightcolor=BLUE, darkcolor=BLUE)
 
     def _header(self):
-        header = tk.Frame(self.root, bg=BG); header.pack(fill="x", padx=32, pady=(22, 12))
+        header = tk.Frame(self.root, bg=BG); header.pack(fill="x", padx=32, pady=(14, 8))
         tk.Label(header, text="SENTINEL", font=("Segoe UI", 22, "bold"), bg=BG, fg=TEXT).pack(side="left")
         tk.Label(header, text="LOCAL SECURITY CAMERA", font=("Segoe UI", 10, "bold"), bg=BG, fg=BLUE).pack(side="left", padx=12, pady=(7, 0))
         self.clock = tk.Label(header, font=("Segoe UI", 10), bg=BG, fg=MUTED); self.clock.pack(side="right", pady=(7, 0))
@@ -54,23 +56,31 @@ class SecurityUI:
             self.cards.append((worker, dot, state, image, *metric_labels, detail))
 
     def _footer(self):
-        bottom = tk.Frame(self.root, bg=BG); bottom.pack(fill="x", padx=32, pady=(15, 24))
-        storage = tk.Frame(bottom, bg=SURFACE, highlightthickness=1, highlightbackground=EDGE); storage.pack(side="left", fill="x", expand=True)
-        row = tk.Frame(storage, bg=SURFACE); row.pack(fill="x", padx=14, pady=(9, 3))
+        bottom = tk.Frame(self.root, bg=BG); bottom.pack(fill="x", padx=32, pady=(8, 12))
+        info = tk.Frame(bottom, bg=BG); info.pack(fill="x", pady=(0, 5))
+        storage = tk.Frame(info, bg=SURFACE, highlightthickness=1, highlightbackground=EDGE); storage.pack(fill="x", expand=True)
+        row = tk.Frame(storage, bg=SURFACE); row.pack(fill="x", padx=14, pady=(5, 2))
         tk.Label(row, text="STORAGE", font=("Segoe UI", 8, "bold"), bg=SURFACE, fg=MUTED).pack(side="left")
         self.storage_text = tk.Label(row, font=("Segoe UI", 9, "bold"), bg=SURFACE, fg=TEXT); self.storage_text.pack(side="right")
-        self.storage_bar = ttk.Progressbar(storage, style="Storage.Horizontal.TProgressbar", maximum=100); self.storage_bar.pack(fill="x", padx=14, pady=(0, 11))
-        actions = tk.Frame(bottom, bg=BG); actions.pack(side="right", padx=(14, 0))
+        self.storage_bar = ttk.Progressbar(storage, style="Storage.Horizontal.TProgressbar", maximum=100); self.storage_bar.pack(fill="x", padx=14, pady=(0, 6))
+        check_status = tk.Frame(info, bg=SURFACE, highlightthickness=1, highlightbackground=EDGE); check_status.pack(fill="x", expand=True, pady=(5, 0))
+        self.resource_bars = {}
+        for name in ("CPU", "RAM", "DISK", "GPU"):
+            cell = tk.Frame(check_status, bg=SURFACE); cell.pack(side="left", fill="x", expand=True, padx=(10, 4))
+            label = tk.Label(cell, text=f"{name} 0%", font=("Segoe UI", 8, "bold"), bg=SURFACE, fg=MUTED, anchor="w")
+            label.pack(fill="x")
+            bar = ttk.Progressbar(cell, mode="determinate", maximum=100)
+            bar.pack(fill="x", pady=(2, 6))
+            self.resource_bars[name] = (label, bar)
+        self.check_eta = tk.Label(check_status, text="Idle", font=("Segoe UI", 9, "bold"), bg=SURFACE, fg=TEXT, anchor="w")
+        self.check_eta.pack(side="left", padx=(8, 14), pady=6)
+        actions = tk.Frame(bottom, bg=BG); actions.pack(fill="x")
         self.record_button = self._button(actions, "● START RECORDING", self.app.toggle_recording, GREEN, "#061b12")
-        self.record_button.pack(side="left", padx=3)
+        self.record_button.pack(side="right", padx=3)
         self.check_button = self._button(actions, "DOUBLE-CHECK RECORDINGS", self.app.check_active_recordings, AMBER, "#3a2a12")
-        self.check_button.pack(side="left", padx=3)
-        self.check_progress = ttk.Progressbar(actions, length=150, mode="determinate", maximum=1)
-        self.check_progress.pack(side="left", padx=5)
-        self.check_eta = tk.Label(actions, text="", font=("Segoe UI", 8), bg=BG, fg=MUTED, width=16, anchor="w")
-        self.check_eta.pack(side="left", padx=(0, 3))
+        self.check_button.pack(side="right", padx=3)
         for label, command, fg, bg in (("DETECTION", self.app.toggle_detection, BLUE, "#102a40"), ("SETTINGS", self.settings, TEXT, "#263548"), ("⛶", self.fullscreen, TEXT, "#263548"), ("EXIT", self.app.close, MUTED, "#263548")):
-            self._button(actions, label, command, fg, bg).pack(side="left", padx=3)
+            self._button(actions, label, command, fg, bg).pack(side="right", padx=3)
 
     def sync_recording_button(self):
         if self.app.recording_enabled:
@@ -80,7 +90,13 @@ class SecurityUI:
 
     @staticmethod
     def _button(parent, label, command, fg, bg):
-        return tk.Button(parent, text=label, command=command, font=("Segoe UI", 9, "bold"), bd=0, padx=12, pady=9, bg=bg, fg=fg, activebackground="#344963", activeforeground=TEXT, cursor="hand2")
+        return tk.Button(parent, text=label, command=command, font=("Segoe UI", 9, "bold"), bd=0, padx=12, pady=6, bg=bg, fg=fg, activebackground="#344963", activeforeground=TEXT, cursor="hand2")
+
+    @staticmethod
+    def _duration_text(seconds):
+        hours, remainder = divmod(max(0, int(seconds)), 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
     def fullscreen(self): self.root.attributes("-fullscreen", not self.root.attributes("-fullscreen"))
 
@@ -116,22 +132,40 @@ class SecurityUI:
         checking = any(worker.active_check_running for worker in self.app.workers)
         total_frames = sum(worker.active_check_total_frames for worker in self.app.workers)
         processed_frames = sum(worker.active_check_processed_frames for worker in self.app.workers)
-        progress_value = min(processed_frames, total_frames) if checking else total_frames
-        self.check_progress.configure(maximum=max(1, total_frames), value=progress_value)
+        cpu_percent = psutil.cpu_percent(interval=None)
+        ram_percent = psutil.virtual_memory().percent
+        try:
+            disk_percent = psutil.disk_usage(self.app.config.recordings_dir).percent
+        except OSError:
+            disk_percent = 0.0
+        gpu_usage = max((worker.detector.gpu_utilization_percent() for worker in self.app.workers), default=0.0)
+        for name, value in (("CPU", cpu_percent), ("RAM", ram_percent), ("DISK", disk_percent), ("GPU", gpu_usage)):
+            label, bar = self.resource_bars[name]
+            label.config(text=f"{name} {value:.1f}%")
+            bar.configure(value=value)
         if checking and processed_frames > 0:
-            started = min((worker.active_check_started_at for worker in self.app.workers if worker.active_check_running), default=time.monotonic())
+            started = min((worker.active_check_processing_started_at for worker in self.app.workers
+                           if worker.active_check_running and worker.active_check_processing_started_at),
+                          default=time.monotonic())
             elapsed = max(0.001, time.monotonic() - started)
             remaining = max(0, int((total_frames - processed_frames) * elapsed / processed_frames))
             minutes, seconds = divmod(remaining, 60)
-            self.check_eta.config(text=f"{processed_frames:,}/{total_frames:,}  ETA {minutes}:{seconds:02d}")
+            batch_size = max((worker.detector.current_verification_batch_size for worker in self.app.workers), default=0)
+            self.check_eta.config(
+                text=f"{processed_frames:,}/{total_frames:,}  ETA {minutes}:{seconds:02d}  BATCH {batch_size}",
+                fg=GREEN,
+            )
         elif checking:
             files_total = sum(worker.active_check_total_files for worker in self.app.workers)
+            batch_size = max((worker.detector.current_verification_batch_size for worker in self.app.workers), default=0)
+            started = min((worker.active_check_started_at for worker in self.app.workers if worker.active_check_running), default=time.monotonic())
+            waiting = self._duration_text(time.monotonic() - started)
             if files_total:
-                self.check_eta.config(text=f"{files_total:,} clips · ETA calculating")
+                self.check_eta.config(text=f"{files_total:,} clips · WAITING {waiting} · BATCH {batch_size}", fg=AMBER)
             else:
-                self.check_eta.config(text="Preparing double-check…")
+                self.check_eta.config(text=f"Preparing double-check…  WAITING {waiting} · BATCH {batch_size}", fg=AMBER)
         else:
-            self.check_eta.config(text="")
+            self.check_eta.config(text="Idle", fg=TEXT)
         if checking:
             self.check_button.config(text="STOP DOUBLE-CHECK", fg=RED, bg="#2a1117", state="normal")
         else:

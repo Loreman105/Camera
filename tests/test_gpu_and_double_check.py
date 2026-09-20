@@ -2,11 +2,12 @@ import threading
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 import numpy as np
 
 from security_camera.camera import CameraWorker
+from security_camera.detector import PersonDetector
 from security_camera.main import Application
 from security_camera.recorder import SegmentRecorder
 
@@ -51,6 +52,7 @@ class DoubleCheckActionTest(unittest.TestCase):
         worker.active_check_running = False
         worker._active_check_cancel = threading.Event()
         worker._active_check_requested = threading.Event()
+        worker._double_check_active = threading.Event()
         worker.detector = SimpleNamespace(available=True)
         worker.active_check_total_frames = 0
         worker.active_check_processed_frames = 0
@@ -63,6 +65,7 @@ class DoubleCheckActionTest(unittest.TestCase):
             self.assertTrue(worker.check_active_recordings(Path("recordings")))
 
         self.assertTrue(worker._active_check_requested.is_set())
+        self.assertTrue(worker._double_check_active.is_set())
         self.assertEqual(worker.status.error, "Double-check waiting for background verification")
         thread.return_value.start.assert_called_once_with()
 
@@ -80,3 +83,70 @@ class DoubleCheckActionTest(unittest.TestCase):
         self.assertEqual(Application.check_active_recordings(app), 1)
         first.assert_called_once_with(Path("recordings"), set())
         second.assert_not_called()
+
+    def test_manual_check_scans_all_mp4_recordings_in_active_folders(self):
+        active = Path("Camera") / "Active" / "2026-09-20" / "clip_4k.mp4"
+        active_low = Path("Camera") / "Active" / "2026-09-20" / "clip_low.mp4"
+        inactive = Path("Camera") / "Inactive" / "2026-09-20" / "old_4k.mp4"
+        folder = SimpleNamespace(exists=lambda: True, rglob=lambda _pattern: [active, active_low, inactive])
+        worker = CameraWorker.__new__(CameraWorker)
+        worker._stop = threading.Event()
+        worker._active_check_cancel = threading.Event()
+        worker._active_check_requested = threading.Event()
+        worker._double_check_active = threading.Event()
+        worker._verification_lock = threading.Lock()
+        worker.detector = SimpleNamespace(video_has_person=MagicMock(return_value=True))
+        worker.config = SimpleNamespace(low_width=256, low_height=144)
+        worker.status = SimpleNamespace(error="")
+        worker.active_check_running = True
+        worker.active_check_total_frames = 0
+        worker.active_check_processed_frames = 0
+        worker.active_check_total_files = 0
+        worker.active_check_processed_files = 0
+
+        with patch.object(CameraWorker, "_frame_count", return_value=1):
+            worker._check_active_recordings(folder, set())
+
+        self.assertEqual(worker.detector.video_has_person.call_args_list, [
+            call(active, sample_every=30, progress=worker._active_check_progress),
+            call(active_low, sample_every=30, progress=worker._active_check_progress),
+        ])
+        self.assertEqual(worker.active_check_total_files, 2)
+        self.assertFalse(worker._double_check_active.is_set())
+
+
+class VerificationBatchTuningTest(unittest.TestCase):
+    def setUp(self):
+        self.detector = PersonDetector.__new__(PersonDetector)
+        self.detector.verification_tuning_batches = 2
+        self.detector.maximum_verification_batch_size = 256
+        self.detector.current_verification_batch_size = 16
+        self.performance = {}
+        self.failed_sizes = set()
+
+    def test_increases_batch_when_measured_throughput_improves(self):
+        for _ in range(2):
+            next_size = self.detector._tune_verification_batch(
+                16, 1.0, self.performance, self.failed_sizes,
+            )
+        self.assertEqual(next_size, 32)
+
+        for _ in range(2):
+            next_size = self.detector._tune_verification_batch(
+                32, 0.25, self.performance, self.failed_sizes,
+            )
+        self.assertEqual(next_size, 64)
+
+    def test_reverts_to_previous_batch_when_throughput_degrades(self):
+        for _ in range(2):
+            next_size = self.detector._tune_verification_batch(
+                16, 1.0, self.performance, self.failed_sizes,
+            )
+        self.assertEqual(next_size, 32)
+
+        for _ in range(2):
+            next_size = self.detector._tune_verification_batch(
+                32, 2.2, self.performance, self.failed_sizes,
+            )
+        self.assertEqual(next_size, 16)
+        self.assertIn(32, self.failed_sizes)

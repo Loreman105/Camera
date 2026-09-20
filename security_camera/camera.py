@@ -8,11 +8,15 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import cv2
+import psutil
 
 from .config import AppConfig, CameraConfig
 from .detector import PersonDetector
 from .recorder import SegmentRecorder
 from .storage import StorageMonitor
+
+
+double_check_log = logging.getLogger("double_check")
 
 
 def discover_cameras(max_index: int = 10) -> list[str]:
@@ -55,7 +59,8 @@ class CameraStatus:
 
 
 class CameraWorker:
-    def __init__(self, camera: CameraConfig, config: AppConfig, storage: StorageMonitor):
+    def __init__(self, camera: CameraConfig, config: AppConfig, storage: StorageMonitor,
+                 double_check_active: threading.Event | None = None):
         self.camera, self.config, self.storage = camera, config, storage
         self.status, self.latest_frame = CameraStatus(), None
         self.detector = PersonDetector(config.person_confidence, config.inference_device)
@@ -67,12 +72,17 @@ class CameraWorker:
         self._verification_lock = threading.Lock()
         self._active_check_cancel = threading.Event()
         self._active_check_requested = threading.Event()
+        # This event is shared by every camera.  A manual scan gets exclusive
+        # use of inference while capture and recording continue normally.
+        self._double_check_active = double_check_active or threading.Event()
         self.active_check_running = False
         self.active_check_total_frames = 0
         self.active_check_processed_frames = 0
         self.active_check_total_files = 0
         self.active_check_processed_files = 0
         self.active_check_started_at = 0.0
+        self.active_check_processing_started_at = 0.0
+        self._double_check_last_metrics_at = 0.0
         # Keep one newest original frame: an overloaded model may drop stale work,
         # but never makes capture wait or changes the detector input resolution.
         self._detection_queue: queue.Queue = queue.Queue(maxsize=1)
@@ -117,23 +127,30 @@ class CameraWorker:
                 frame = self._detection_queue.get(timeout=0.2)
             except queue.Empty:
                 continue
-            if self.config.detection_enabled and self.detector.available:
+            if (self.config.detection_enabled and self.detector.available
+                    and not self._double_check_active.is_set()):
                 self._update_detection(self.detector.has_person(frame))
 
     def _verify_recordings_loop(self) -> None:
         verified: set[str] = set()
         folder = Path(self.config.recordings_dir) / self.camera.label
         while not self._stop.is_set():
+            if self._double_check_active.wait(0.2):
+                continue
             with self._verification_lock:
                 for path in folder.rglob("*.mp4") if folder.exists() else ():
                     # A manual exhaustive pass takes precedence over routine
                     # sampled verification; release the shared model promptly.
-                    if self._stop.is_set() or self._active_check_requested.is_set():
+                    if (self._stop.is_set() or self._active_check_requested.is_set()
+                            or self._double_check_active.is_set()):
                         break
                     if self.recorder.path == path or path.name in verified:
                         continue
                     detected = self.detector.video_has_person(
-                        path, progress=lambda _frame: not self._active_check_requested.is_set(),
+                        path, progress=lambda _frame: (
+                            not self._active_check_requested.is_set()
+                            and not self._double_check_active.is_set()
+                        ),
                     )
                     if detected is None:
                         continue
@@ -145,7 +162,7 @@ class CameraWorker:
             self._stop.wait(30)
 
     def check_active_recordings(self, folder: Path | None = None, excluded_paths: set[Path] | None = None) -> bool:
-        """Toggle an exhaustive check of completed 4K recordings in ``folder``."""
+        """Toggle an exhaustive check of completed MP4 recordings in ``folder``."""
         if self.active_check_running:
             self._active_check_cancel.set()
             return False
@@ -154,11 +171,13 @@ class CameraWorker:
             return False
         self._active_check_cancel.clear()
         self._active_check_requested.set()
+        self._double_check_active.set()
         self.active_check_total_frames = 0
         self.active_check_processed_frames = 0
         self.active_check_total_files = 0
         self.active_check_processed_files = 0
         self.active_check_started_at = time.monotonic()
+        self.active_check_processing_started_at = 0.0
         self.active_check_running = True
         self.status.error = "Double-check waiting for background verification"
         root = folder or Path(self.config.recordings_dir) / self.camera.label
@@ -189,41 +208,82 @@ class CameraWorker:
             if self._active_check_cancel.is_set() or self._stop.is_set():
                 return
             self._active_check_requested.clear()
-            # The manual double-check is intentionally exhaustive, but only for
-            # 4K sources. Low-resolution inactive derivatives do not need to be
-            # re-encoded, and an in-progress recording must never be opened.
-            paths = [path for path in folder.rglob("*_4k.mp4") if path not in excluded_paths] if folder.exists() else []
+            # Only completed recordings in Active folders need a decision.
+            # In-progress recordings are excluded by the application.
+            paths = [
+                path for path in folder.rglob("*.mp4")
+                if path.parent.parent.name == "Active" and path not in excluded_paths
+            ] if folder.exists() else []
             self.active_check_total_files = len(paths)
-            self.status.error = f"Double-checking {len(paths):,} 4K clips"
-            logging.info("Double-check started for %s: %s completed 4K recordings", folder, len(paths))
-            self.active_check_total_frames = sum(self._frame_count(path) for path in paths)
+            self.status.error = f"Double-checking {len(paths):,} MP4 recordings"
+            logging.info("Double-check started for %s: %s completed MP4 recordings", folder, len(paths))
+            self.active_check_total_frames = sum(
+                (self._frame_count(path) + 29) // 30 for path in paths
+            )
+            double_check_log.info(
+                "START folder=%s files=%s sampled_frames=%s sample_every=30 device=%s",
+                folder, len(paths), self.active_check_total_frames, getattr(self.detector, "device", "unknown"),
+            )
             for path in paths:
                 if self._stop.is_set() or self._active_check_cancel.is_set() or path in excluded_paths:
                     continue
-                detected = self.detector.video_has_person(path, sample_every=1, progress=self._active_check_progress)
-                if detected is False and path.parent.parent.name in ("Active", "Inactive"):
+                detected = self.detector.video_has_person(path, sample_every=30, progress=self._active_check_progress)
+                if detected is False:
                     try:
                         SegmentRecorder.downsize_to_inactive(path, (self.config.low_width, self.config.low_height))
                     except OSError as exc:
                         logging.warning("Unable to downsize active recording %s: %s", path, exc)
-                elif detected is True and path.parent.parent.name == "Inactive":
-                    try:
-                        SegmentRecorder.move_to_detection_bucket(path, True)
-                    except OSError as exc:
-                        logging.warning("Unable to move person-containing recording %s: %s", path, exc)
                 self.active_check_processed_files += 1
+                double_check_log.info(
+                    "FILE completed=%s/%s path=%s result=%s batch=%s",
+                    self.active_check_processed_files, self.active_check_total_files, path,
+                    "person" if detected else "inactive" if detected is False else "unavailable",
+                    getattr(self.detector, "current_verification_batch_size", "unknown"),
+                )
         finally:
             self._active_check_requested.clear()
             if acquired:
                 self._verification_lock.release()
             self.active_check_running = False
+            self._double_check_active.clear()
             cancelled = self._active_check_cancel.is_set() or self._stop.is_set()
             state = "cancelled" if cancelled else "complete"
-            self.status.error = f"Double-check {state}: {self.active_check_processed_files:,}/{self.active_check_total_files:,} 4K clips"
-            logging.info("Double-check %s for %s: %s/%s 4K recordings", state, folder, self.active_check_processed_files, self.active_check_total_files)
+            elapsed = max(0.001, time.monotonic() - getattr(self, "active_check_started_at", time.monotonic()))
+            double_check_log.info(
+                "END state=%s elapsed=%.1fs files=%s/%s sampled_frames=%s/%s batch=%s",
+                state, elapsed, self.active_check_processed_files, self.active_check_total_files,
+                self.active_check_processed_frames, self.active_check_total_frames,
+                getattr(self.detector, "current_verification_batch_size", "unknown"),
+            )
+            self.status.error = f"Double-check {state}: {self.active_check_processed_files:,}/{self.active_check_total_files:,} MP4 recordings"
+            logging.info("Double-check %s for %s: %s/%s MP4 recordings", state, folder, self.active_check_processed_files, self.active_check_total_files)
 
     def _active_check_progress(self, processed_frames: int) -> bool:
         self.active_check_processed_frames += 1
+        now = time.monotonic()
+        if not self.active_check_processing_started_at:
+            self.active_check_processing_started_at = now
+        last_metrics = getattr(self, "_double_check_last_metrics_at", 0.0)
+        if now - last_metrics >= 10.0:
+            self._double_check_last_metrics_at = now
+            elapsed = max(0.001, now - self.active_check_processing_started_at)
+            rate = self.active_check_processed_frames / elapsed
+            remaining = max(0, self.active_check_total_frames - self.active_check_processed_frames)
+            eta = remaining / rate if rate else 0.0
+            try:
+                disk = psutil.disk_usage(self.config.recordings_dir)
+                disk_text = f"{disk.percent:.1f}%"
+            except OSError:
+                disk_text = "unavailable"
+            double_check_log.info(
+                "METRICS files=%s/%s sampled_frames=%s/%s elapsed=%.1fs rate=%.2f_frames_per_sec eta=%.1fs "
+                "batch=%s cpu=%.1f%% ram=%.1f%% disk=%s gpu=%.1f%% gpu_memory=%.1f%%",
+                self.active_check_processed_files, self.active_check_total_files,
+                self.active_check_processed_frames, self.active_check_total_frames, elapsed, rate, eta,
+                self.detector.current_verification_batch_size, psutil.cpu_percent(interval=None),
+                psutil.virtual_memory().percent, disk_text, self.detector.gpu_utilization_percent(),
+                self.detector.gpu_memory_percent(),
+            )
         return not self._active_check_cancel.is_set() and not self._stop.is_set()
 
     def ptz_overlay(self) -> str | None:
