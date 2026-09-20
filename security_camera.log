@@ -62142,3 +62142,39 @@ AttributeError: 'float' object has no attribute 'append'
 2026-09-20 10:53:37,068 INFO Camera 2 - Webcam opened with backend DSHOW
 2026-09-20 10:53:37,068 INFO Camera 2 - Webcam connected
 2026-09-20 10:53:38,206 INFO Double-check started for D:\Recordings: 14052 completed MP4 recordings
+2026-09-20 10:57:03,952 INFO Discovered cameras: ['Camera index 0']
+2026-09-20 10:57:03,953 INFO Application startup; FFmpeg hardware encoders: none/fallback
+2026-09-20 10:57:04,969 INFO Using CUDA GPU 0: NVIDIA GeForce RTX 4060 Laptop GPU
+2026-09-20 10:57:05,183 INFO YOLO person detector loaded on cuda:0 (FP16)
+2026-09-20 10:57:05,183 INFO Using CUDA GPU 0: NVIDIA GeForce RTX 4060 Laptop GPU
+2026-09-20 10:57:05,246 INFO YOLO person detector loaded on cuda:0 (FP16)
+2026-09-20 10:57:07,993 INFO Double-check started for D:\Recordings: 14052 completed MP4 recordings
+2026-09-20 10:57:08,090 INFO Camera 2 - Webcam opened with backend DSHOW
+2026-09-20 10:57:08,090 INFO Camera 2 - Webcam connected
+2026-09-20 11:02:38,592 ERROR Recording verification failure for D:\Recordings\Camera 2 - Webcam\Active\2026-09-15\07-19-53_144p.mp4
+Traceback (most recent call last):
+  File "C:\Github\Camera\security_camera\detector.py", line 324, in video_has_person
+    batch_size = self._tune_verification_batch(
+        batch_size, time.perf_counter() - started,
+        self._verification_performance, self._verification_failed_sizes,
+    )
+  File "C:\Github\Camera\security_camera\detector.py", line 133, in _tune_verification_batch
+    samples.append(batch_size / max(0.0001, elapsed))
+    ^^^^^^^^^^^^^^
+AttributeError: 'float' object has no attribute 'append'
+2026-09-20 11:03:39,133 ERROR Recording verification failure for D:\Recordings\Camera 2 - Webcam\Active\2026-09-15\08-19-54_144p.mp4
+Traceback (most recent call last):
+  File "C:\Github\Camera\security_camera\detector.py", line 324, in video_has_person
+    batch_size = self._tune_verification_batch(
+        batch_size, time.perf_counter() - started,
+        self._verification_performance, self._verification_failed_sizes,
+    )
+  File "C:\Github\Camera\security_camera\detector.py", line 133, in _tune_verification_batch
+    samples.append(batch_size / max(0.0001, elapsed))
+    ^^^^^^^^^^^^^^
+AttributeError: 'float' object has no attribute 'append'
+2026-09-20 11:05:04,504 INFO Downsized person-free recording D:\Recordings\Camera 2 - Webcam\Active\2026-09-15\08-24-20_4k.mp4 to D:\Recordings\Camera 2 - Webcam\Inactive\2026-09-15\08-24-20_low.mp4
+2026-09-20 11:05:20,989 INFO Downsized person-free recording D:\Recordings\Camera 2 - Webcam\Active\2026-09-15\08-24-24_4k.mp4 to D:\Recordings\Camera 2 - Webcam\Inactive\2026-09-15\08-24-24_low.mp4
+2026-09-20 11:06:04,515 INFO Downsized person-free recording D:\Recordings\Camera 2 - Webcam\Active\2026-09-15\08-24-57_4k.mp4 to D:\Recordings\Camera 2 - Webcam\Inactive\2026-09-15\08-24-57_low.mp4
+2026-09-20 11:06:09,678 INFO Downsized person-free recording D:\Recordings\Camera 2 - Webcam\Active\2026-09-15\08-24-58_4k.mp4 to D:\Recordings\Camera 2 - Webcam\Inactive\2026-09-15\08-24-58_low.mp4
+2026-09-20 11:06:48,419 INFO Downsized person-free recording D:\Recordings\Camera 2 - Webcam\Active\2026-09-15\08-25-07_4k.mp4 to D:\Recordings\Camera 2 - Webcam\Inactive\2026-09-15\08-25-07_low.mp4
