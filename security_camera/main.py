@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 import socket
 import threading
+import time
 import tkinter as tk
 from tkinter import filedialog
 
@@ -136,6 +137,7 @@ class Application:
         if getattr(self, "processing_thread", None) and self.processing_thread.is_alive():
             return False
         self.processing_status = "Processing recordings..."
+        self.processing_started_at = time.monotonic()
         self.processing_thread = threading.Thread(
             target=self._process_remote_worker, args=(server,), name="remote processor", daemon=True,
         )

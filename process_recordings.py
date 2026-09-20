@@ -64,8 +64,7 @@ def process_recordings(server: str, device: str | None = None, sample_every: int
         nonlocal completed
         detector = PersonDetector(config.person_confidence, worker_device)
         if not detector.available:
-            report(f"YOLO unavailable on processing device {worker_device}: {detector.error}")
-            return
+            raise RuntimeError(f"YOLO unavailable on processing device {worker_device}: {detector.error}")
         with tempfile.TemporaryDirectory(prefix="sentinel-processing-") as temporary:
             download_root = Path(temporary)
             while True:
@@ -79,8 +78,7 @@ def process_recordings(server: str, device: str | None = None, sample_every: int
                         output.write(chunk)
                 detected = detector.video_has_person(local_path, sample_every=max(1, sample_every))
                 if detected is None:
-                    report(f"Unavailable: {claimed['name']}")
-                    continue
+                    raise RuntimeError(f"Unable to analyze recording: {claimed['name']}")
                 request_json(f"{server}/api/recordings/result/{claimed['id']}", method="POST",
                              payload={"detected": detected, "processor": processor_id})
                 with completed_lock:

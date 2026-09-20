@@ -6,6 +6,10 @@ Only the recorder creates a 256×144 low-activity derivative.
 
 ## Run
 
+For one-click Windows setup and startup, double-click `start_camera.bat`. It
+creates or reuses `.venv`, installs `requirements.txt`, and starts the mode
+selector for **One computer**, **Record**, or **Process**.
+
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -22,9 +26,8 @@ At startup, choose a mode from the dropdown:
 On the first launch, choose the folder where recordings should be saved. The
 choice is stored in `settings.json` and reused on later launches. You can change
 it later under **Settings**; restart the application after saving. `settings.json`,
-logs, and recordings are local. Install `ultralytics` to
-enable YOLO detection; until then the UI explicitly shows that detection is
-unavailable rather than claiming a false result.
+logs, and recordings are local. The batch file installs `ultralytics` from
+`requirements.txt`, so YOLO detection is included in the normal setup.
 
 YOLO automatically uses CUDA GPU 0 with FP16 inference when the installed
 PyTorch build supports CUDA. Set `inference_device` to `"cpu"` or a GPU index
@@ -85,8 +88,10 @@ The processor downloads completed clips one at a time, checks them with its
 local YOLO model, and sends the result back. Clips with a person remain in
 `Active`; person-free 4K clips are converted to the configured low-resolution
 format in `Inactive`. Open clips are skipped and become available after the
-recorder closes them. The processor command can be run again later to process
-new clips.
+recorder closes them. The Process window shows the recorder URL, configured
+devices, elapsed time, latest clip status, and live CPU, RAM, GPU, and disk
+usage graphs. The processor command can be run again later to process new
+clips.
 
 ## Storage defaults
 

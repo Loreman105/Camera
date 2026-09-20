@@ -16,6 +16,8 @@ class SecurityUI:
     """A dependency-free dark control-room dashboard."""
     def __init__(self, root, app):
         self.root, self.app, self.cards = root, app, []
+        self.process_history = {name: [] for name in ("CPU", "RAM", "GPU")}
+        self.process_started_at = None
         root.title("Sentinel · Local Security Camera")
         screen_height = root.winfo_screenheight()
         root.geometry(f"1440x{min(900, max(620, screen_height - 120))}"); root.minsize(1050, 620); root.configure(bg=BG)
@@ -37,6 +39,10 @@ class SecurityUI:
         tk.Label(header, text="SENTINEL", font=("Segoe UI", 22, "bold"), bg=BG, fg=TEXT).pack(side="left")
         tk.Label(header, text="LOCAL SECURITY CAMERA", font=("Segoe UI", 10, "bold"), bg=BG, fg=BLUE).pack(side="left", padx=12, pady=(7, 0))
         self.clock = tk.Label(header, font=("Segoe UI", 10), bg=BG, fg=MUTED); self.clock.pack(side="right", pady=(7, 0))
+        self.processor_status = None
+        if self.app.mode == "Record":
+            self.processor_status = tk.Label(header, text="PROCESSORS 0 CONNECTED", font=("Segoe UI", 9, "bold"), bg="#3d1720", fg=RED, padx=12, pady=5)
+            self.processor_status.pack(side="right", padx=(0, 10))
         self.system = tk.Label(header, text=self.app.mode.upper(), font=("Segoe UI", 9, "bold"), bg="#123829", fg=GREEN, padx=12, pady=5); self.system.pack(side="right", padx=(0, 15))
 
     def _cameras(self):
@@ -98,12 +104,31 @@ class SecurityUI:
     def _process_panel(self):
         panel = tk.Frame(self.root, bg=BG); panel.pack(fill="both", expand=True, padx=32, pady=24)
         tk.Label(panel, text="REMOTE RECORDING PROCESSOR", font=("Segoe UI", 18, "bold"), bg=BG, fg=TEXT).pack(anchor="w")
-        tk.Label(panel, text="Process completed clips from the recorder computer.", font=("Segoe UI", 10), bg=BG, fg=MUTED).pack(anchor="w", pady=(6, 20))
+        tk.Label(panel, text=f"Recorder: {self.app.config.processor_server_url}  ·  Devices: {self.app.config.processing_devices}", font=("Segoe UI", 10), bg=BG, fg=MUTED).pack(anchor="w", pady=(6, 16))
         self.process_status = tk.Label(panel, text="Ready", font=("Segoe UI", 11, "bold"), bg=SURFACE, fg=TEXT, anchor="w", padx=16, pady=14)
         self.process_status.pack(fill="x", pady=(0, 14))
+        self.process_elapsed = tk.Label(panel, text="Elapsed 00:00:00", font=("Segoe UI", 9, "bold"), bg=BG, fg=MUTED, anchor="w")
+        self.process_elapsed.pack(fill="x", pady=(0, 10))
+        metrics = tk.Frame(panel, bg=BG); metrics.pack(fill="x", pady=(0, 14))
+        self.process_metric_labels = {}
+        for name in ("CPU", "RAM", "GPU", "DISK"):
+            card = tk.Frame(metrics, bg=SURFACE, highlightthickness=1, highlightbackground=EDGE)
+            card.pack(side="left", fill="both", expand=True, padx=(0, 8) if name != "DISK" else 0)
+            tk.Label(card, text=name, font=("Segoe UI", 8, "bold"), bg=SURFACE, fg=MUTED).pack(anchor="w", padx=12, pady=(8, 0))
+            value = tk.Label(card, text="--", font=("Segoe UI", 16, "bold"), bg=SURFACE, fg=TEXT)
+            value.pack(anchor="w", padx=12, pady=(0, 8)); self.process_metric_labels[name] = value
+        graphs = tk.Frame(panel, bg=BG); graphs.pack(fill="both", expand=True)
+        self.process_graphs = {}
+        for column, name in enumerate(("CPU", "RAM", "GPU")):
+            graphs.columnconfigure(column, weight=1)
+            box = tk.Frame(graphs, bg=SURFACE, highlightthickness=1, highlightbackground=EDGE)
+            box.grid(row=0, column=column, sticky="nsew", padx=(0, 8) if column < 2 else 0)
+            tk.Label(box, text=f"{name} HISTORY", font=("Segoe UI", 8, "bold"), bg=SURFACE, fg=MUTED).pack(anchor="w", padx=10, pady=(8, 2))
+            graph = tk.Canvas(box, height=150, bg="#0a111b", highlightthickness=0)
+            graph.pack(fill="both", expand=True, padx=8, pady=(0, 8)); self.process_graphs[name] = graph
         self.process_button = self._button(panel, "DOUBLE-CHECK RECORDINGS", self.app.check_active_recordings, AMBER, "#3a2a12")
         self.process_button.pack(anchor="w")
-        tk.Label(panel, text="Use Settings to paste the recorder URL and configure processing GPUs.", font=("Segoe UI", 9), bg=BG, fg=MUTED).pack(anchor="w", pady=(18, 0))
+        tk.Label(panel, text="Use Settings to change the recorder URL or processing GPUs.", font=("Segoe UI", 9), bg=BG, fg=MUTED).pack(anchor="w", pady=(12, 0))
 
     def sync_recording_button(self):
         if self.app.recording_enabled:
@@ -174,6 +199,7 @@ class SecurityUI:
     def refresh(self):
         if self.app.mode == "Process":
             self.process_status.config(text=getattr(self.app, "processing_status", "Ready"))
+            self._refresh_process_metrics()
             self.root.after(500, self.refresh)
             return
         online = 0
@@ -193,6 +219,14 @@ class SecurityUI:
                     cv2.putText(preview, overlay, (9, 21), cv2.FONT_HERSHEY_SIMPLEX, .47, color, 1, cv2.LINE_AA)
                 photo = ImageTk.PhotoImage(Image.fromarray(cv2.cvtColor(preview, cv2.COLOR_BGR2RGB))); image.config(image=photo, text=""); image.image = photo
         if self.app.mode == "Record":
+            if self.processor_status is not None:
+                count, devices = self.app.stream_server.processor_summary()
+                device_text = f" · {', '.join(devices)}" if devices else ""
+                self.processor_status.config(
+                    text=f"PROCESSORS {count} CONNECTED{device_text}",
+                    fg=GREEN if count else RED,
+                    bg="#123829" if count else "#3d1720",
+                )
             self.system.config(text=f"●  {online}/{len(self.cards)} CAMERAS ONLINE", fg=GREEN if online else RED, bg="#123829" if online else "#3d1720")
             self.clock.config(text=time.strftime("%A, %B %d  ·  %I:%M:%S %p")); self.root.after(100, self.refresh)
             return
@@ -240,3 +274,46 @@ class SecurityUI:
         self.system.config(text=f"●  {online}/{len(self.cards)} CAMERAS ONLINE", fg=GREEN if online else RED, bg="#123829" if online else "#3d1720")
         free = self.app.storage.last_percent; self.storage_text.config(text="Storage unavailable" if free is None else f"{free:.1f}% FREE · {self.app.config.recordings_dir}"); self.storage_bar["value"] = max(0, min(100, free or 0))
         self.clock.config(text=time.strftime("%A, %B %d  ·  %I:%M:%S %p")); self.root.after(100, self.refresh)
+
+    def _refresh_process_metrics(self):
+        values = {"CPU": psutil.cpu_percent(interval=None), "RAM": psutil.virtual_memory().percent}
+        try:
+            values["DISK"] = psutil.disk_usage(self.app.config.recordings_dir).percent
+        except OSError:
+            values["DISK"] = 0.0
+        values["GPU"] = self._gpu_usage()
+        for name, value in values.items():
+            self.process_metric_labels[name].config(text="N/A" if value is None else f"{value:.1f}%")
+            if name in self.process_graphs:
+                history = self.process_history[name]
+                history.append(value or 0.0); del history[:-60]
+                self._draw_graph(self.process_graphs[name], history, GREEN if name == "GPU" else BLUE)
+        started = getattr(self.app, "processing_started_at", None)
+        elapsed = time.monotonic() - started if started else 0
+        self.process_elapsed.config(text=f"Elapsed {self._duration_text(elapsed)}")
+
+    @staticmethod
+    def _gpu_usage():
+        try:
+            import pynvml
+            pynvml.nvmlInit()
+            values = [pynvml.nvmlDeviceGetUtilizationRates(pynvml.nvmlDeviceGetHandleByIndex(index)).gpu
+                      for index in range(pynvml.nvmlDeviceGetCount())]
+            pynvml.nvmlShutdown()
+            return max(values, default=0.0)
+        except Exception:
+            return None
+
+    @staticmethod
+    def _draw_graph(canvas, values, color):
+        canvas.delete("all")
+        width = max(1, canvas.winfo_width()); height = max(1, canvas.winfo_height())
+        for fraction in (0.25, 0.5, 0.75):
+            y = height * (1 - fraction); canvas.create_line(0, y, width, y, fill="#1d2b3b")
+        if len(values) < 2:
+            return
+        points = []
+        for index, value in enumerate(values):
+            x = index * width / max(1, len(values) - 1)
+            points.extend((x, height - (min(100, max(0, value)) / 100 * height)))
+        canvas.create_line(*points, fill=color, width=2, smooth=True)

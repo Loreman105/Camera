@@ -51,6 +51,13 @@ class StreamServer:
         self._server.server_close()
         self._thread.join(timeout=2)
 
+    def processor_summary(self) -> tuple[int, list[str]]:
+        now = time.monotonic()
+        with self._coordination_lock:
+            active = [value for value in self._processors.values() if now - value["last_seen"] < 15]
+        devices = [item["devices"] for item in active]
+        return len(active), devices
+
     def _handler_class(self):
         stream_server = self
 
