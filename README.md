@@ -13,8 +13,10 @@ pip install -r requirements.txt
 python start_camera.py
 ```
 
-Click **Settings** to choose the discovered OpenCV camera indexes and recording
-folder. `settings.json`, logs, and recordings are local. Install `ultralytics` to
+On the first launch, choose the folder where recordings should be saved. The
+choice is stored in `settings.json` and reused on later launches. You can change
+it later under **Settings**; restart the application after saving. `settings.json`,
+logs, and recordings are local. Install `ultralytics` to
 enable YOLO detection; until then the UI explicitly shows that detection is
 unavailable rather than claiming a false result.
 

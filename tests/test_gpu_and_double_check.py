@@ -38,6 +38,17 @@ class NvidiaRecordingTest(unittest.TestCase):
         encoders.assert_not_called()
 
 
+class FirstRunRecordingFolderTest(unittest.TestCase):
+    def test_first_run_folder_selection_updates_config(self):
+        app = Application.__new__(Application)
+        app.config = SimpleNamespace(recordings_dir=r"D:\Recordings")
+        with patch("security_camera.main.filedialog.askdirectory", return_value=r"E:\Camera Clips") as choose:
+            app._choose_recordings_dir()
+
+        self.assertEqual(app.config.recordings_dir, r"E:\Camera Clips")
+        choose.assert_called_once()
+
+
 class DoubleCheckActionTest(unittest.TestCase):
     def test_second_click_requests_cancellation(self):
         worker = CameraWorker.__new__(CameraWorker)

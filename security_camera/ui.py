@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 import tkinter as tk
-from tkinter import ttk
+from tkinter import filedialog, ttk
 
 import cv2
 import psutil
@@ -107,10 +107,21 @@ class SecurityUI:
         for index, worker in enumerate(self.app.workers):
             tk.Label(box, text=worker.camera.label, font=("Segoe UI", 10), bg=SURFACE, fg=TEXT).grid(row=index + 1, column=0, sticky="w", padx=22, pady=7)
             value = tk.StringVar(value="" if worker.camera.device_index is None else str(worker.camera.device_index)); ttk.Entry(box, textvariable=value, width=12).grid(row=index + 1, column=1, padx=(15, 22), pady=7); values.append(value)
+        tk.Label(box, text="Recording folder", font=("Segoe UI", 10), bg=SURFACE, fg=TEXT).grid(row=3, column=0, sticky="w", padx=22, pady=7)
+        recordings_dir = tk.StringVar(value=self.app.config.recordings_dir)
+        ttk.Entry(box, textvariable=recordings_dir, width=34).grid(row=3, column=1, padx=(15, 4), pady=7)
+        self._button(box, "BROWSE", lambda: self._browse_recordings_dir(recordings_dir), TEXT, "#263548").grid(row=3, column=2, padx=(0, 22), pady=7)
         def save():
             for worker, value in zip(self.app.workers, values): worker.camera.device_index = int(value.get()) if value.get().strip() else None
+            if recordings_dir.get().strip(): self.app.config.recordings_dir = recordings_dir.get().strip()
             self.app.save_settings(); box.destroy()
-        self._button(box, "SAVE · RESTART TO RECONNECT", save, TEXT, "#263548").grid(row=3, column=0, columnspan=2, pady=(16, 20))
+        self._button(box, "SAVE · RESTART TO APPLY", save, TEXT, "#263548").grid(row=4, column=0, columnspan=3, pady=(16, 20))
+
+    @staticmethod
+    def _browse_recordings_dir(value):
+        selected = filedialog.askdirectory(title="Choose where to save recordings", mustexist=False)
+        if selected:
+            value.set(selected)
 
     def refresh(self):
         online = 0

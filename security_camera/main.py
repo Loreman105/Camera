@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 import threading
 import tkinter as tk
+from tkinter import filedialog
 
 from .camera import CameraWorker, discover_cameras, discovered_indexes
 from .config import load, save
@@ -22,7 +23,12 @@ class Application:
             double_check_logger.addHandler(handler)
         double_check_logger.setLevel(logging.INFO)
         double_check_logger.propagate = False
-        self.settings_path=Path("settings.json"); self.config=load(self.settings_path)
+        self.settings_path=Path("settings.json")
+        first_run = not self.settings_path.exists()
+        self.config=load(self.settings_path)
+        if first_run:
+            self._choose_recordings_dir()
+            save(self.config, self.settings_path)
         self.recording_enabled = False
         self.discovered=discover_cameras()
         # A fresh install should work as soon as two cameras are found. Existing
@@ -38,6 +44,15 @@ class Application:
         for w in self.workers: w.start()
         self.root=tk.Tk(); self.ui=SecurityUI(self.root,self)
         self._storage_housekeeping()
+
+    def _choose_recordings_dir(self):
+        selected = filedialog.askdirectory(
+            title="Choose where to save recordings",
+            initialdir=str(Path.home()),
+            mustexist=False,
+        )
+        if selected:
+            self.config.recordings_dir = selected
     def start_recording(self):
         self.recording_enabled = True
         for w in self.workers: w.set_recording(True)
