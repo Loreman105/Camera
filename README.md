@@ -13,6 +13,12 @@ pip install -r requirements.txt
 python start_camera.py
 ```
 
+At startup, choose a mode from the dropdown:
+
+- **One computer**: capture, detect, and process recordings on this computer.
+- **Record**: capture recordings while leaving detection and verification to another computer.
+- **Process**: enter the recorder computer's LAN URL and process its completed recordings on this computer.
+
 On the first launch, choose the folder where recordings should be saved. The
 choice is stored in `settings.json` and reused on later launches. You can change
 it later under **Settings**; restart the application after saving. `settings.json`,
@@ -31,6 +37,56 @@ For recording, `video_encoder` defaults to `"auto"`: when FFmpeg exposes
 prefer NVENC explicitly, or `"cpu"` to force the portable OpenCV writer. If
 FFmpeg, NVENC, or the driver is unavailable, the app logs the reason and falls
 back to OpenCV rather than stopping capture.
+
+## View video over the LAN
+
+The remote viewer is enabled in `settings.json` and serves the newest frame
+from each camera as an MJPEG stream. Start the application, find the camera
+PC's private address with `ipconfig`, then open this URL from another device on
+the same network:
+
+```text
+http://<camera-pc-lan-ip>:8765/
+```
+
+For example, if the camera PC has address `192.168.1.50`, open
+`http://192.168.1.50:8765/`. Individual streams are available at `/stream/0`
+and `/stream/1`; `/snapshot` returns the first camera's current JPEG frame.
+Allow TCP port `8765` through Windows Firewall when prompted. The server binds
+to `0.0.0.0`, so it accepts LAN connections; keep the network private because
+the viewer has no login.
+
+## Process recordings on a second computer
+
+Install the project and its dependencies, copy `yolo11n.pt` to the second
+computer, and connect both computers to the same LAN. On the camera computer,
+run recording-only mode to start capture without local detection:
+
+```powershell
+python start_camera.py --recording-only
+```
+
+On the processing computer, run this from the project folder:
+
+```powershell
+python process_recordings.py --server http://<camera-pc-lan-ip>:8765
+```
+
+The same operation is available through the startup dropdown by choosing
+**Process** and entering that URL.
+
+Multiple processor computers can run at the same time. The recorder assigns
+each completed clip to one processor and reports active processor heartbeats;
+the Process window also reports the connected count. In Settings, set
+**Processing GPUs** to `auto`, `all`, or an explicit list such as `0,1`. `all`
+creates one processing worker per detected CUDA GPU on that computer.
+
+The processor downloads completed clips one at a time, checks them with its
+local YOLO model, and sends the result back. Clips with a person remain in
+`Active`; person-free 4K clips are converted to the configured low-resolution
+format in `Inactive`. Open clips are skipped and become available after the
+recorder closes them. The processor command can be run again later to process
+new clips.
 
 ## Storage defaults
 

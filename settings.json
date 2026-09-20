@@ -26,5 +26,10 @@
   "detection_enabled": true,
   "ptz_usb_wakeup_enabled": true,
   "ptz_idle_return_seconds": 300,
-  "ptz_home_preset": 1
+  "ptz_home_preset": 1,
+  "remote_stream_enabled": false,
+  "remote_stream_host": "0.0.0.0",
+  "remote_stream_port": 8765,
+  "processor_server_url": "",
+  "processing_devices": "auto"
 }

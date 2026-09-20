@@ -1,2 +1,18 @@
 *.tmp
 BIT9266.tmp
+
+# Python caches and test output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.test-recorder-work/
+
+# Local application logs
+*.log
+
+# Installer and local environment output
+.pytorch-cuda-install.err
+.pytorch-cuda-install.out
+
+# Optional local recording folder
+recordings/

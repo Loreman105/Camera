@@ -36,6 +36,11 @@ class AppConfig:
     ptz_usb_wakeup_enabled: bool = True
     ptz_idle_return_seconds: int = 300
     ptz_home_preset: int = 1
+    remote_stream_enabled: bool = False
+    remote_stream_host: str = "0.0.0.0"
+    remote_stream_port: int = 8765
+    processor_server_url: str = ""
+    processing_devices: str = "auto"
 
 
 def load(path: Path) -> AppConfig:

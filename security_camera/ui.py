@@ -19,7 +19,11 @@ class SecurityUI:
         root.title("Sentinel · Local Security Camera")
         screen_height = root.winfo_screenheight()
         root.geometry(f"1440x{min(900, max(620, screen_height - 120))}"); root.minsize(1050, 620); root.configure(bg=BG)
-        self._style(); self._header(); self._cameras(); self._footer()
+        self._style(); self._header()
+        if app.mode == "Process":
+            self._process_panel()
+        else:
+            self._cameras(); self._footer()
         root.bind("<Escape>", lambda _e: root.attributes("-fullscreen", False))
         root.bind("<F11>", lambda _e: self.fullscreen())
         root.protocol("WM_DELETE_WINDOW", app.close); self.refresh()
@@ -33,7 +37,7 @@ class SecurityUI:
         tk.Label(header, text="SENTINEL", font=("Segoe UI", 22, "bold"), bg=BG, fg=TEXT).pack(side="left")
         tk.Label(header, text="LOCAL SECURITY CAMERA", font=("Segoe UI", 10, "bold"), bg=BG, fg=BLUE).pack(side="left", padx=12, pady=(7, 0))
         self.clock = tk.Label(header, font=("Segoe UI", 10), bg=BG, fg=MUTED); self.clock.pack(side="right", pady=(7, 0))
-        self.system = tk.Label(header, font=("Segoe UI", 9, "bold"), bg="#123829", fg=GREEN, padx=12, pady=5); self.system.pack(side="right", padx=(0, 15))
+        self.system = tk.Label(header, text=self.app.mode.upper(), font=("Segoe UI", 9, "bold"), bg="#123829", fg=GREEN, padx=12, pady=5); self.system.pack(side="right", padx=(0, 15))
 
     def _cameras(self):
         grid = tk.Frame(self.root, bg=BG); grid.pack(fill="both", expand=True, padx=28)
@@ -57,13 +61,19 @@ class SecurityUI:
 
     def _footer(self):
         bottom = tk.Frame(self.root, bg=BG); bottom.pack(fill="x", padx=32, pady=(8, 12))
-        info = tk.Frame(bottom, bg=BG); info.pack(fill="x", pady=(0, 5))
-        storage = tk.Frame(info, bg=SURFACE, highlightthickness=1, highlightbackground=EDGE); storage.pack(fill="x", expand=True)
+        info = tk.Frame(bottom, bg=BG)
+        if self.app.mode != "Record":
+            info.pack(fill="x", pady=(0, 5))
+        storage = tk.Frame(info, bg=SURFACE, highlightthickness=1, highlightbackground=EDGE)
+        if self.app.mode != "Record":
+            storage.pack(fill="x", expand=True)
         row = tk.Frame(storage, bg=SURFACE); row.pack(fill="x", padx=14, pady=(5, 2))
         tk.Label(row, text="STORAGE", font=("Segoe UI", 8, "bold"), bg=SURFACE, fg=MUTED).pack(side="left")
         self.storage_text = tk.Label(row, font=("Segoe UI", 9, "bold"), bg=SURFACE, fg=TEXT); self.storage_text.pack(side="right")
         self.storage_bar = ttk.Progressbar(storage, style="Storage.Horizontal.TProgressbar", maximum=100); self.storage_bar.pack(fill="x", padx=14, pady=(0, 6))
-        check_status = tk.Frame(info, bg=SURFACE, highlightthickness=1, highlightbackground=EDGE); check_status.pack(fill="x", expand=True, pady=(5, 0))
+        check_status = tk.Frame(info, bg=SURFACE, highlightthickness=1, highlightbackground=EDGE)
+        if self.app.mode != "Record":
+            check_status.pack(fill="x", expand=True, pady=(5, 0))
         self.resource_bars = {}
         for name in ("CPU", "RAM", "DISK", "GPU"):
             cell = tk.Frame(check_status, bg=SURFACE); cell.pack(side="left", fill="x", expand=True, padx=(10, 4))
@@ -77,10 +87,23 @@ class SecurityUI:
         actions = tk.Frame(bottom, bg=BG); actions.pack(fill="x")
         self.record_button = self._button(actions, "● START RECORDING", self.app.toggle_recording, GREEN, "#061b12")
         self.record_button.pack(side="right", padx=3)
-        self.check_button = self._button(actions, "DOUBLE-CHECK RECORDINGS", self.app.check_active_recordings, AMBER, "#3a2a12")
-        self.check_button.pack(side="right", padx=3)
+        if self.app.mode != "Record":
+            self.check_button = self._button(actions, "DOUBLE-CHECK RECORDINGS", self.app.check_active_recordings, AMBER, "#3a2a12")
+            self.check_button.pack(side="right", padx=3)
         for label, command, fg, bg in (("DETECTION", self.app.toggle_detection, BLUE, "#102a40"), ("SETTINGS", self.settings, TEXT, "#263548"), ("⛶", self.fullscreen, TEXT, "#263548"), ("EXIT", self.app.close, MUTED, "#263548")):
+            if self.app.mode == "Record" and label == "DETECTION":
+                continue
             self._button(actions, label, command, fg, bg).pack(side="right", padx=3)
+
+    def _process_panel(self):
+        panel = tk.Frame(self.root, bg=BG); panel.pack(fill="both", expand=True, padx=32, pady=24)
+        tk.Label(panel, text="REMOTE RECORDING PROCESSOR", font=("Segoe UI", 18, "bold"), bg=BG, fg=TEXT).pack(anchor="w")
+        tk.Label(panel, text="Process completed clips from the recorder computer.", font=("Segoe UI", 10), bg=BG, fg=MUTED).pack(anchor="w", pady=(6, 20))
+        self.process_status = tk.Label(panel, text="Ready", font=("Segoe UI", 11, "bold"), bg=SURFACE, fg=TEXT, anchor="w", padx=16, pady=14)
+        self.process_status.pack(fill="x", pady=(0, 14))
+        self.process_button = self._button(panel, "DOUBLE-CHECK RECORDINGS", self.app.check_active_recordings, AMBER, "#3a2a12")
+        self.process_button.pack(anchor="w")
+        tk.Label(panel, text="Use Settings to paste the recorder URL and configure processing GPUs.", font=("Segoe UI", 9), bg=BG, fg=MUTED).pack(anchor="w", pady=(18, 0))
 
     def sync_recording_button(self):
         if self.app.recording_enabled:
@@ -111,11 +134,36 @@ class SecurityUI:
         recordings_dir = tk.StringVar(value=self.app.config.recordings_dir)
         ttk.Entry(box, textvariable=recordings_dir, width=34).grid(row=3, column=1, padx=(15, 4), pady=7)
         self._button(box, "BROWSE", lambda: self._browse_recordings_dir(recordings_dir), TEXT, "#263548").grid(row=3, column=2, padx=(0, 22), pady=7)
+        next_row = 4
+        tk.Label(box, text="Recorder URL", font=("Segoe UI", 10), bg=SURFACE, fg=TEXT).grid(row=next_row, column=0, sticky="w", padx=22, pady=7)
+        processor_url = tk.StringVar(value=self.app.config.processor_server_url)
+        ttk.Entry(box, textvariable=processor_url, width=34).grid(row=next_row, column=1, columnspan=2, padx=(15, 22), pady=7)
+        next_row += 1
+        tk.Label(box, text="Processing GPUs", font=("Segoe UI", 10), bg=SURFACE, fg=TEXT).grid(row=next_row, column=0, sticky="w", padx=22, pady=7)
+        processing_devices = tk.StringVar(value=self.app.config.processing_devices)
+        ttk.Entry(box, textvariable=processing_devices, width=34).grid(row=next_row, column=1, columnspan=2, padx=(15, 22), pady=7)
+        next_row += 1
+        tk.Label(box, text="Use auto, all, or a list such as 0,1", font=("Segoe UI", 8), bg=SURFACE, fg=MUTED).grid(row=next_row, column=1, columnspan=2, sticky="w", padx=(15, 22))
+        next_row += 1
+        command = f"python process_recordings.py --server {processor_url.get() or '<recorder-url>'}"
+        command_value = tk.StringVar(value=command)
+        tk.Label(box, text="Processor command", font=("Segoe UI", 10), bg=SURFACE, fg=TEXT).grid(row=next_row, column=0, sticky="w", padx=22, pady=7)
+        ttk.Entry(box, textvariable=command_value, width=34).grid(row=next_row, column=1, padx=(15, 4), pady=7)
+        self._button(box, "COPY", lambda: self._copy_text(command_value.get()), TEXT, "#263548").grid(row=next_row, column=2, padx=(0, 22), pady=7)
+        processor_url.trace_add("write", lambda *_: command_value.set(
+            f"python process_recordings.py --server {processor_url.get() or '<recorder-url>'}"
+        ))
+        next_row += 1
         def save():
             for worker, value in zip(self.app.workers, values): worker.camera.device_index = int(value.get()) if value.get().strip() else None
             if recordings_dir.get().strip(): self.app.config.recordings_dir = recordings_dir.get().strip()
+            self.app.config.processor_server_url = processor_url.get().strip()
+            self.app.config.processing_devices = processing_devices.get().strip() or "auto"
             self.app.save_settings(); box.destroy()
-        self._button(box, "SAVE · RESTART TO APPLY", save, TEXT, "#263548").grid(row=4, column=0, columnspan=3, pady=(16, 20))
+        self._button(box, "SAVE · RESTART TO APPLY", save, TEXT, "#263548").grid(row=next_row, column=0, columnspan=3, pady=(16, 20))
+
+    def _copy_text(self, text):
+        self.root.clipboard_clear(); self.root.clipboard_append(text); self.root.update()
 
     @staticmethod
     def _browse_recordings_dir(value):
@@ -124,6 +172,10 @@ class SecurityUI:
             value.set(selected)
 
     def refresh(self):
+        if self.app.mode == "Process":
+            self.process_status.config(text=getattr(self.app, "processing_status", "Ready"))
+            self.root.after(500, self.refresh)
+            return
         online = 0
         for worker, dot, state, image, recording, person, fps, detail in self.cards:
             status = worker.status
@@ -140,6 +192,10 @@ class SecurityUI:
                     cv2.rectangle(preview, (0, 0), (640, 31), (0, 0, 0), -1); color = (0, 165, 255) if "SENT" in overlay else (255, 169, 53)
                     cv2.putText(preview, overlay, (9, 21), cv2.FONT_HERSHEY_SIMPLEX, .47, color, 1, cv2.LINE_AA)
                 photo = ImageTk.PhotoImage(Image.fromarray(cv2.cvtColor(preview, cv2.COLOR_BGR2RGB))); image.config(image=photo, text=""); image.image = photo
+        if self.app.mode == "Record":
+            self.system.config(text=f"●  {online}/{len(self.cards)} CAMERAS ONLINE", fg=GREEN if online else RED, bg="#123829" if online else "#3d1720")
+            self.clock.config(text=time.strftime("%A, %B %d  ·  %I:%M:%S %p")); self.root.after(100, self.refresh)
+            return
         checking = any(worker.active_check_running for worker in self.app.workers)
         total_frames = sum(worker.active_check_total_frames for worker in self.app.workers)
         processed_frames = sum(worker.active_check_processed_frames for worker in self.app.workers)

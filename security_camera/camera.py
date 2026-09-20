@@ -60,9 +60,12 @@ class CameraStatus:
 
 class CameraWorker:
     def __init__(self, camera: CameraConfig, config: AppConfig, storage: StorageMonitor,
-                 double_check_active: threading.Event | None = None):
+                 double_check_active: threading.Event | None = None, recording_only: bool = False):
         self.camera, self.config, self.storage = camera, config, storage
+        self.recording_only = recording_only
         self.status, self.latest_frame = CameraStatus(), None
+        if self.recording_only:
+            self.status.recording_mode = "4K"
         self.detector = PersonDetector(config.person_confidence, config.inference_device)
         self.recorder = SegmentRecorder(
             Path(config.recordings_dir), camera.label, config.segment_seconds,
@@ -127,7 +130,7 @@ class CameraWorker:
                 frame = self._detection_queue.get(timeout=0.2)
             except queue.Empty:
                 continue
-            if (self.config.detection_enabled and self.detector.available
+            if (not self.recording_only and self.config.detection_enabled and self.detector.available
                     and not self._double_check_active.is_set()):
                 self._update_detection(self.detector.has_person(frame))
 
@@ -135,6 +138,9 @@ class CameraWorker:
         verified: set[str] = set()
         folder = Path(self.config.recordings_dir) / self.camera.label
         while not self._stop.is_set():
+            if self.recording_only:
+                self._stop.wait(1)
+                continue
             if self._double_check_active.wait(0.2):
                 continue
             with self._verification_lock:
@@ -353,7 +359,7 @@ class CameraWorker:
                 try: self._detection_queue.put_nowait(frame)
                 except queue.Full: pass
             if self._record.is_set() and self.storage.may_record():
-                confirmed_detection = self.status.person_frames >= self.config.person_frames_required
+                confirmed_detection = self.recording_only or self.status.person_frames >= self.config.person_frames_required
                 try: self.recorder.write(frame, self.status.recording_mode, confirmed_detection); self.status.recording_active = True
                 except Exception as exc: self.status.recording_active = False; self.status.error = str(exc); logging.exception("Recorder error")
             else:
