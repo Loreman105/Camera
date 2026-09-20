@@ -1,5 +1,41 @@
-double_check.log
-security_camera.log
-security_camera.log
-security_camera.log
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Local application state and runtime output
 *.log
+recordings/
+Recordings/
+.test-recorder-work/
+
+# Local installer and temporary files
+.pytorch-cuda-install.*
+*.tmp
+*.temp
+
+# Coverage and test reports
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Packaging and build output
+build/
+dist/
+*.egg-info/
+
+# Windows and editor metadata
+[Dd]esktop.ini
+Thumbs.db
+.vscode/
+.idea/
